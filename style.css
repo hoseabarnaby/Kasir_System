@@ -1,0 +1,15 @@
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+aside nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); }
+
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.fade-in { animation: fadeInUp 0.3s ease; }
+
+.pcard { cursor: pointer; transition: all 0.15s ease; user-select: none; }
+.pcard:hover { border-color: #6366f1; transform: translateY(-3px); box-shadow: 0 12px 32px rgba(15,23,42,0.12); }
+.pcard.out { opacity: 0.35; pointer-events: none; }
+
+@media print { body > *:not(#printArea) { display: none !important; } }
+* { scrollbar-width: thin; scrollbar-color: #cbd5e1 transparent; }
