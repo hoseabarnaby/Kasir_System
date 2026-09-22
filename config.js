@@ -2,6 +2,7 @@
 var SUPABASE_URL = 'https://rgfjpekyejrtqxcryhnn.supabase.co';
 var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJnZmpwZWt5ZWpydHF4Y3J5aG5uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk5NzY4NDYsImV4cCI6MjEwNTU1Mjg0Nn0.wo1NK9d7cyCsJancNiDwVvKXYFo4YjzN8mrLmBiOZnE';
 /* ═══════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════ */
 
 var sb = null;
 var LAP = { period: 'today', from: '', to: '' };
@@ -10,7 +11,8 @@ var S = {
   user: null, store: null,
   products: [], suppliers: [], customers: [], trx: [], cash: [],
   cart: [], diskon: 0, bayar: 0,
-  page: 'dashboard', cat: 'all', q: '', cashType: 'masuk'
+  page: 'dashboard', cat: 'all', q: '',
+  cashType: 'masuk', metodeBayar: 'tunai'
 };
 
 function $(id) { return document.getElementById(id); }
