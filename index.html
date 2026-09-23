@@ -2,11 +2,28 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Kasir Pro</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%236366f1'/%3E%3Cstop offset='1' stop-color='%238b5cf6'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='100' rx='24' fill='url(%23g)'/%3E%3Cpath d='M20 30h60v12H20z' fill='white'/%3E%3Cpath d='M25 46h50v34H25z' fill='white'/%3E%3Ccircle cx='36' cy='68' r='5' fill='%236366f1'/%3E%3Crect x='48' y='63' width='22' height='10' rx='2' fill='%236366f1'/%3E%3C/svg%3E">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Kasir Pro - Sistem POS Multi-Toko</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%236366f1'/%3E%3Cstop offset='1' stop-color='%238b5cf6'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='100' rx='24' fill='url(%23g)'/%3E%3Cpath d='M20 30h60v12H20z' fill='white' opacity='.95'/%3E%3Cpath d='M25 46h50v34H25z' fill='white' opacity='.95'/%3E%3Ccircle cx='36' cy='68' r='5' fill='%236366f1'/%3E%3Crect x='48' y='63' width='22' height='10' rx='2' fill='%236366f1'/%3E%3C/svg%3E">
 <script src="https://cdn.tailwindcss.com"></script>
-<script>tailwind.config={theme:{extend:{fontFamily:{sans:['Inter','system-ui','sans-serif']},colors:{brand:{50:'#eef2ff',100:'#e0e7ff',500:'#6366f1',600:'#4f46e5',700:'#4338ca',900:'#312e81'}},boxShadow:{soft:'0 1px 3px rgba(15,23,42,.06)',card:'0 4px 16px rgba(15,23,42,.06)'}}}}</script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+      colors: {
+        brand: { 50:'#eef2ff',100:'#e0e7ff',200:'#c7d2fe',300:'#a5b4fc',400:'#818cf8',500:'#6366f1',600:'#4f46e5',700:'#4338ca',800:'#3730a3',900:'#312e81' }
+      },
+      boxShadow: {
+        soft: '0 1px 3px rgba(15,23,42,0.06)',
+        card: '0 4px 16px rgba(15,23,42,0.06)'
+      }
+    }
+  }
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
@@ -14,73 +31,149 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <link rel="stylesheet" href="style.css">
 </head>
-<body class="antialiased bg-slate-50 text-slate-900">
+<body class="font-sans antialiased text-slate-900 bg-slate-50">
 
+<!-- ============ LOADING SCREEN ============ -->
 <div id="ld" class="fixed inset-0 bg-slate-900 z-[999] flex flex-col items-center justify-center gap-5 p-6">
-  <div class="w-16 h-16 bg-gradient-to-br from-brand-500 to-purple-500 rounded-2xl flex items-center justify-center shadow-xl text-white font-black text-2xl">KP</div>
-  <div class="text-slate-400 text-sm">Memuat...</div>
+  <div class="w-16 h-16 bg-gradient-to-br from-brand-500 to-purple-500 rounded-2xl flex items-center justify-center shadow-xl shadow-brand-500/40">
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="3" width="18" height="5" rx="1"/>
+      <rect x="3" y="10" width="18" height="11" rx="1"/>
+      <circle cx="8" cy="16" r="1.2" fill="white"/>
+      <rect x="12" y="15" width="6" height="2" rx="0.5" fill="white"/>
+    </svg>
+  </div>
+  <div class="text-slate-400 text-sm font-medium">Memuat aplikasi...</div>
   <div class="w-8 h-8 border-[3px] border-slate-700 border-t-brand-500 rounded-full animate-spin"></div>
-  <div id="er" class="hidden max-w-lg text-red-300 text-xs bg-red-950/60 border border-red-800 p-4 rounded-xl font-mono whitespace-pre-wrap text-left"></div>
+  <div id="er" class="hidden max-w-lg text-red-300 text-xs bg-red-950/60 border border-red-800 p-4 rounded-xl font-mono whitespace-pre-wrap text-left leading-relaxed"></div>
 </div>
 
-<div id="au" class="hidden min-h-screen items-center justify-center bg-gradient-to-br from-slate-900 via-indigo-900 to-brand-700 p-6">
-  <div class="relative w-full max-w-md bg-white rounded-3xl p-8 shadow-2xl">
-    <div class="text-center mb-6">
-      <div class="w-16 h-16 mx-auto bg-gradient-to-br from-brand-500 to-purple-500 rounded-2xl flex items-center justify-center shadow-xl text-white font-black text-2xl mb-4">KP</div>
+<!-- ============ AUTH SCREEN ============ -->
+<div id="au" class="hidden min-h-screen items-center justify-center bg-gradient-to-br from-slate-900 via-indigo-900 to-brand-700 p-4 lg:p-6 relative overflow-hidden">
+  <div class="absolute -top-40 -right-40 w-[500px] h-[500px] bg-purple-500/30 rounded-full blur-[100px]"></div>
+  <div class="absolute -bottom-40 -left-40 w-[500px] h-[500px] bg-blue-500/30 rounded-full blur-[100px]"></div>
+
+  <div class="relative w-full max-w-md bg-white rounded-3xl p-6 lg:p-8 shadow-2xl">
+    <div class="text-center mb-6 lg:mb-7">
+      <div class="w-16 h-16 mx-auto bg-gradient-to-br from-brand-500 to-purple-500 rounded-2xl flex items-center justify-center shadow-xl shadow-brand-500/40 mb-4">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="5" rx="1"/>
+          <rect x="3" y="10" width="18" height="11" rx="1"/>
+          <circle cx="8" cy="16" r="1.2" fill="white"/>
+          <rect x="12" y="15" width="6" height="2" rx="0.5" fill="white"/>
+        </svg>
+      </div>
       <h1 class="text-2xl font-black tracking-tight">Kasir Pro</h1>
       <p class="text-sm text-slate-500 mt-1">Sistem POS Multi-Toko</p>
     </div>
+
     <div class="flex bg-slate-100 rounded-xl p-1 mb-6">
-      <button id="tL" onclick="tab('L')" class="flex-1 py-2.5 rounded-lg text-sm font-bold bg-white text-brand-600 shadow-sm">Masuk</button>
-      <button id="tR" onclick="tab('R')" class="flex-1 py-2.5 rounded-lg text-sm font-bold text-slate-500">Daftar</button>
+      <button id="tL" onclick="tab('L')" class="flex-1 py-2.5 rounded-lg text-sm font-bold bg-white text-brand-600 shadow-sm transition">Masuk</button>
+      <button id="tR" onclick="tab('R')" class="flex-1 py-2.5 rounded-lg text-sm font-bold text-slate-500 transition">Daftar</button>
     </div>
+
+    <!-- Login Form -->
     <div id="fL" class="space-y-4">
-      <div><label class="block text-xs font-bold text-slate-600 uppercase mb-2">Email</label><input id="lE" type="email" placeholder="admin@toko.com" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm focus:border-brand-500 outline-none"></div>
-      <div><label class="block text-xs font-bold text-slate-600 uppercase mb-2">Password</label><input id="lP" type="password" placeholder="Password" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm focus:border-brand-500 outline-none"></div>
-      <button id="bL" class="w-full py-3.5 bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm rounded-xl shadow-lg">Masuk</button>
+      <div>
+        <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Email</label>
+        <input id="lE" type="email" placeholder="admin@toko.com" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 outline-none transition">
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Password</label>
+        <input id="lP" type="password" placeholder="Password" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 outline-none transition">
+      </div>
+      <button id="bL" class="w-full py-3.5 bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm rounded-xl shadow-lg shadow-brand-500/30 transition transform hover:-translate-y-0.5">Masuk</button>
     </div>
+
+    <!-- Register Form -->
     <div id="fR" class="space-y-4 hidden">
-      <div><label class="block text-xs font-bold text-slate-600 uppercase mb-2">Nama Toko *</label><input id="rN" placeholder="Toko Berkah Jaya" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm focus:border-brand-500 outline-none"></div>
-      <div><label class="block text-xs font-bold text-slate-600 uppercase mb-2">Email *</label><input id="rE" type="email" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm focus:border-brand-500 outline-none"></div>
-      <div><label class="block text-xs font-bold text-slate-600 uppercase mb-2">Password * (min 6)</label><input id="rP" type="password" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm focus:border-brand-500 outline-none"></div>
-      <button id="bR" class="w-full py-3.5 bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm rounded-xl shadow-lg">Daftar Toko Baru</button>
+      <div>
+        <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Nama Toko *</label>
+        <input id="rN" placeholder="Toko Berkah Jaya" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 outline-none transition">
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Email *</label>
+        <input id="rE" type="email" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 outline-none transition">
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Password * (min 6)</label>
+        <input id="rP" type="password" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 outline-none transition">
+      </div>
+      <button id="bR" class="w-full py-3.5 bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm rounded-xl shadow-lg shadow-brand-500/30 transition transform hover:-translate-y-0.5">Daftar Toko Baru</button>
     </div>
+
     <div id="msg" class="hidden mt-4 p-3 rounded-xl text-sm font-semibold"></div>
   </div>
 </div>
 
+<!-- ============ APP SCREEN ============ -->
 <div id="ap" class="hidden min-h-screen">
-  <aside class="fixed top-0 left-0 bottom-0 w-64 bg-slate-900 flex flex-col z-40">
+
+  <!-- Overlay untuk mobile -->
+  <div id="sidebarOverlay" class="hidden fixed inset-0 bg-black/50 z-30 lg:hidden" onclick="toggleSidebar()"></div>
+
+  <!-- Sidebar -->
+  <aside id="sidebarMain" class="fixed top-0 left-0 bottom-0 w-64 bg-slate-900 flex flex-col z-40 transition-transform duration-300 -translate-x-full lg:translate-x-0">
     <div class="px-5 py-5 border-b border-white/5 flex items-center gap-3">
-      <div class="w-11 h-11 bg-gradient-to-br from-brand-500 to-purple-500 rounded-xl flex items-center justify-center shadow-lg text-white font-black text-sm flex-shrink-0">KP</div>
+      <div class="w-11 h-11 bg-gradient-to-br from-brand-500 to-purple-500 rounded-xl flex items-center justify-center shadow-lg shadow-brand-500/40 flex-shrink-0">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="5" rx="1"/>
+          <rect x="3" y="10" width="18" height="11" rx="1"/>
+          <circle cx="8" cy="16" r="1.2" fill="white"/>
+          <rect x="12" y="15" width="6" height="2" rx="0.5" fill="white"/>
+        </svg>
+      </div>
       <div class="min-w-0 flex-1">
         <div id="sN" class="text-white text-sm font-bold truncate">Toko</div>
-        <div class="text-slate-500 text-xs mt-0.5 flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>Online</div>
+        <div class="text-slate-500 text-xs mt-0.5 flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_0_3px_rgba(16,185,129,0.15)]"></span>
+          Online
+        </div>
       </div>
+      <button onclick="toggleSidebar()" class="lg:hidden text-slate-400 hover:text-white p-1">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
     </div>
+
     <nav id="nv" class="flex-1 overflow-y-auto p-3"></nav>
+
     <div class="p-3 border-t border-white/5">
       <div id="uE" class="text-xs text-slate-500 px-3 py-2 bg-white/5 rounded-lg mb-2 truncate">-</div>
-      <button onclick="doLogout()" class="w-full py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-sm font-semibold rounded-lg">Keluar</button>
+      <button onclick="doLogout()" class="w-full py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-sm font-semibold rounded-lg transition">Keluar</button>
     </div>
   </aside>
-  <div class="ml-64 min-h-screen flex flex-col">
-    <header class="sticky top-0 z-30 bg-white/85 backdrop-blur-xl border-b border-slate-200 px-8 h-[72px] flex items-center gap-4">
+
+  <!-- Main Area -->
+  <div class="ml-0 lg:ml-64 min-h-screen flex flex-col">
+    <!-- Topbar -->
+    <header class="sticky top-0 z-30 bg-white/85 backdrop-blur-xl border-b border-slate-200 px-4 lg:px-8 h-[72px] flex items-center gap-3 lg:gap-4">
+      <button onclick="toggleSidebar()" class="lg:hidden w-10 h-10 rounded-lg hover:bg-slate-100 flex items-center justify-center flex-shrink-0">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      </button>
       <div class="flex-1 min-w-0">
-        <div id="pT" class="text-xl font-black tracking-tight">Dashboard</div>
-        <div id="pS" class="text-sm text-slate-500 mt-0.5">Ringkasan bisnis</div>
+        <div id="pT" class="text-lg lg:text-xl font-black tracking-tight truncate">Dashboard</div>
+        <div id="pS" class="text-xs lg:text-sm text-slate-500 mt-0.5 truncate">Ringkasan bisnis</div>
       </div>
-      <div class="px-3 py-1.5 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-full flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Cloud</div>
+      <div class="hidden sm:flex px-3 py-1.5 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-full items-center gap-1.5">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+        Cloud
+      </div>
     </header>
-    <main id="vw" class="flex-1 p-8"></main>
+
+    <!-- Content -->
+    <main id="vw" class="flex-1 p-4 lg:p-8"></main>
   </div>
 </div>
 
-<div id="mdl" class="hidden fixed inset-0 bg-slate-900/65 backdrop-blur-sm z-[100] items-center justify-center p-6" onclick="if(event.target===this)cm()">
+<!-- ============ MODAL ============ -->
+<div id="mdl" class="hidden fixed inset-0 bg-slate-900/65 backdrop-blur-sm z-[100] items-center justify-center p-3 lg:p-6" onclick="if(event.target===this)cm()">
   <div class="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl" id="mb" onclick="event.stopPropagation()"></div>
 </div>
+
+<!-- ============ TOAST ============ -->
 <div id="tt" class="fixed top-5 right-5 z-[300] flex flex-col gap-2.5 pointer-events-none"></div>
 
+<!-- ============ SCRIPTS ============ -->
 <script src="config.js"></script>
 <script src="auth.js"></script>
 <script src="views.js"></script>
