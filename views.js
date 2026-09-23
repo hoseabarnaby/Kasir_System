@@ -39,7 +39,21 @@ function updN() {
   }
 }
 
-function go(p) { S.page = p; updN(); rndr(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+function go(p) {
+  S.page = p;
+  updN();
+  rndr();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (window.innerWidth < 1024) {
+    var sb2 = $('sidebarMain');
+    var ov = $('sidebarOverlay');
+    if (sb2 && !sb2.classList.contains('-translate-x-full')) {
+      sb2.classList.add('-translate-x-full');
+      sb2.classList.remove('translate-x-0');
+      if (ov) ov.classList.add('hidden');
+    }
+  }
+}
 
 function rndr() {
   $('pT').textContent = T[S.page][0];
@@ -69,11 +83,11 @@ function sc(l, v, s, c, ic) {
     p: ['bg-purple-100', 'text-purple-600']
   };
   var co = colors[c] || colors.i;
-  return '<div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-soft">' +
-    '<div class="w-12 h-12 rounded-xl ' + co[0] + ' ' + co[1] + ' flex items-center justify-center text-sm font-black mb-4">' + ic + '</div>' +
-    '<div class="text-[11.5px] font-extrabold text-slate-500 uppercase tracking-wider">' + l + '</div>' +
-    '<div class="text-2xl font-black mt-1.5 tracking-tight">' + v + '</div>' +
-    '<div class="text-xs text-slate-500 mt-1">' + s + '</div>' +
+  return '<div class="bg-white border border-slate-200 rounded-2xl p-4 lg:p-6 shadow-soft">' +
+    '<div class="w-10 h-10 lg:w-12 lg:h-12 rounded-xl ' + co[0] + ' ' + co[1] + ' flex items-center justify-center text-xs lg:text-sm font-black mb-3 lg:mb-4">' + ic + '</div>' +
+    '<div class="text-[10.5px] lg:text-[11.5px] font-extrabold text-slate-500 uppercase tracking-wider">' + l + '</div>' +
+    '<div class="text-lg lg:text-2xl font-black mt-1 lg:mt-1.5 tracking-tight">' + v + '</div>' +
+    '<div class="text-[11px] lg:text-xs text-slate-500 mt-1">' + s + '</div>' +
   '</div>';
 }
 
@@ -126,8 +140,7 @@ function vDash() {
   for (var i = 0; i < active.length; i++) {
     var items = active[i].items || [];
     for (var j = 0; j < items.length; j++) {
-      var it = items[j];
-      hpp += Number(it.harga_beli || 0) * Number(it.qty);
+      hpp += Number(items[j].harga_beli || 0) * Number(items[j].qty);
     }
   }
   var labaKotor = ts - hpp;
@@ -165,47 +178,46 @@ function vDash() {
   var ls = S.products.filter(function (p) { return Number(p.stok) <= 10; }).slice(0, 5);
   var lsHtml = ls.length
     ? ls.map(function (p) {
-        return '<div class="px-6 py-3.5 border-b border-slate-100 flex justify-between items-center last:border-0">' +
-          '<span class="text-sm font-semibold text-slate-700">' + esc(p.nama) + '</span>' +
-          '<span class="px-2.5 py-1 ' + (p.stok <= 3 ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700') + ' text-xs font-bold rounded-full">' + p.stok + '</span>' +
+        return '<div class="px-4 lg:px-6 py-3.5 border-b border-slate-100 flex justify-between items-center last:border-0">' +
+          '<span class="text-sm font-semibold text-slate-700 truncate pr-2">' + esc(p.nama) + '</span>' +
+          '<span class="px-2.5 py-1 ' + (p.stok <= 3 ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700') + ' text-xs font-bold rounded-full flex-shrink-0">' + p.stok + '</span>' +
         '</div>';
       }).join('')
     : '<div class="px-6 py-12 text-center text-slate-400 text-sm">Semua stok aman</div>';
 
-  return '<div class="space-y-6">' +
+  return '<div class="space-y-4 lg:space-y-6">' +
     alertHtml +
-    '<div class="bg-gradient-to-br from-slate-900 via-indigo-700 to-purple-700 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden">' +
-      '<div class="relative flex items-center justify-between gap-6 flex-wrap">' +
-        '<div><h1 class="text-3xl font-black tracking-tight">Halo, ' + esc((S.store && S.store.nama) || 'Admin') + '</h1>' +
-        '<p class="text-indigo-100 text-sm mt-2">Berikut ringkasan bisnis hari ini</p></div>' +
-        '<div class="flex gap-2">' +
-          '<button onclick="fKasCepat(\'masuk\')" class="px-4 py-2.5 rounded-xl bg-white/15 border border-white/20 hover:bg-white/25 text-white text-xs font-bold">+ Kas Masuk</button>' +
-          '<button onclick="fKasCepat(\'keluar\')" class="px-4 py-2.5 rounded-xl bg-white text-slate-900 hover:bg-slate-100 text-xs font-bold">- Ambil Kas</button>' +
+    '<div class="bg-gradient-to-br from-slate-900 via-indigo-700 to-purple-700 rounded-2xl lg:rounded-3xl p-5 lg:p-8 text-white shadow-xl">' +
+      '<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">' +
+        '<div><h1 class="text-xl lg:text-3xl font-black tracking-tight">Halo, ' + esc((S.store && S.store.nama) || 'Admin') + '</h1>' +
+        '<p class="text-indigo-100 text-xs lg:text-sm mt-1 lg:mt-2">Berikut ringkasan bisnis hari ini</p></div>' +
+        '<div class="flex gap-2 flex-wrap">' +
+          '<button onclick="fKasCepat(\'masuk\')" class="flex-1 lg:flex-none px-4 py-2.5 rounded-xl bg-white/15 border border-white/20 hover:bg-white/25 text-white text-xs font-bold">+ Kas Masuk</button>' +
+          '<button onclick="fKasCepat(\'keluar\')" class="flex-1 lg:flex-none px-4 py-2.5 rounded-xl bg-white text-slate-900 hover:bg-slate-100 text-xs font-bold">- Ambil Kas</button>' +
         '</div>' +
       '</div>' +
     '</div>' +
-    '<div class="grid grid-cols-4 gap-5">' +
+    '<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-5">' +
       sc('Hari Ini', rp(st), todayTrx.length + ' transaksi', 'g', 'Rp') +
-      sc('Omzet', rp(ts), 'kotor semua transaksi', 'i', 'Ch') +
+      sc('Omzet', rp(ts), 'kotor', 'i', 'Ch') +
       sc('Laba Kotor', rp(labaKotor), 'Omzet - Modal', 'a', 'Lb') +
       sc('Laba Bersih', rp(labaBersih), 'setelah operasional', 'p', 'Lb') +
     '</div>' +
-    '<div class="grid grid-cols-4 gap-5">' +
-      sc('Saldo Kas', rp(sd), 'uang di laci toko', sd >= 0 ? 'b' : 'r', 'Ks') +
+    '<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-5">' +
+      sc('Saldo Kas', rp(sd), 'uang di laci', sd >= 0 ? 'b' : 'r', 'Ks') +
       sc('Total Piutang', rp(totalPiutang), 'belum dibayar', 'r', 'Ut') +
       sc('Produk', S.products.length, ls.length + ' stok tipis', 'i', 'Pr') +
       sc('Pelanggan', S.customers.length, 'terdaftar', 'g', 'Pl') +
     '</div>' +
     '<div class="bg-white border border-slate-200 rounded-2xl shadow-soft overflow-hidden">' +
-      '<div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between">' +
-        '<div class="font-extrabold text-base">Stok Menipis</div>' +
+      '<div class="px-4 lg:px-6 py-4 lg:py-5 border-b border-slate-100 flex items-center justify-between">' +
+        '<div class="font-extrabold text-sm lg:text-base">Stok Menipis</div>' +
         '<span class="px-3 py-1 bg-amber-100 text-amber-700 text-xs font-bold rounded-full">' + ls.length + ' item</span>' +
       '</div>' + lsHtml +
     '</div>' +
   '</div>';
 }
 
-/* Kas cepat dari dashboard */
 function fKasCepat(tipe) {
   S.cashType = tipe;
   var ic = 'w-full px-4 py-2.5 border-2 border-slate-200 rounded-xl text-sm focus:border-brand-500 outline-none';
@@ -269,46 +281,46 @@ function vAI() {
     'Fokus promosi produk terlaris'
   ];
 
-  return '<div class="space-y-6">' +
-    '<div class="bg-gradient-to-br from-slate-900 via-indigo-700 to-purple-700 rounded-3xl p-8 text-white shadow-xl">' +
-      '<div class="grid grid-cols-[1fr_auto] gap-8 items-center">' +
-        '<div><h1 class="text-2xl font-black">AI Business Analyst</h1>' +
-        '<p class="text-indigo-100 text-sm mt-2">Analisis dari ' + active.length + ' transaksi</p></div>' +
-        '<div class="text-center"><div class="relative w-32 h-32">' +
-          '<svg width="128" height="128" viewBox="0 0 100 100" style="transform:rotate(-90deg)">' +
+  return '<div class="space-y-4 lg:space-y-6">' +
+    '<div class="bg-gradient-to-br from-slate-900 via-indigo-700 to-purple-700 rounded-2xl lg:rounded-3xl p-5 lg:p-8 text-white shadow-xl">' +
+      '<div class="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-4 lg:gap-8 items-center">' +
+        '<div><h1 class="text-xl lg:text-2xl font-black">AI Business Analyst</h1>' +
+        '<p class="text-indigo-100 text-xs lg:text-sm mt-1 lg:mt-2">Analisis dari ' + active.length + ' transaksi</p></div>' +
+        '<div class="text-center"><div class="relative w-24 lg:w-32 h-24 lg:h-32 mx-auto">' +
+          '<svg viewBox="0 0 100 100" style="transform:rotate(-90deg)" class="w-full h-full">' +
             '<circle cx="50" cy="50" r="42" stroke="rgba(255,255,255,.15)" stroke-width="10" fill="none"/>' +
             '<circle cx="50" cy="50" r="42" stroke="url(#aig)" stroke-width="10" fill="none" stroke-linecap="round" stroke-dasharray="' + (hsc * 2.64) + ' 264"/>' +
             '<defs><linearGradient id="aig"><stop offset="0" stop-color="#60a5fa"/><stop offset="1" stop-color="#c084fc"/></linearGradient></defs>' +
           '</svg>' +
-          '<div class="absolute inset-0 flex flex-col items-center justify-center"><div class="text-3xl font-black">' + hsc + '</div><div class="text-[10px] text-indigo-200 uppercase font-bold">Score</div></div>' +
-        '</div><div class="text-sm font-extrabold px-4 py-1.5 rounded-full mt-3 inline-block" style="background:' + hbg + ';color:' + hc + '">' + hl + '</div></div>' +
+          '<div class="absolute inset-0 flex flex-col items-center justify-center"><div class="text-2xl lg:text-3xl font-black">' + hsc + '</div><div class="text-[9px] lg:text-[10px] text-indigo-200 uppercase font-bold">Score</div></div>' +
+        '</div><div class="text-xs lg:text-sm font-extrabold px-3 lg:px-4 py-1 lg:py-1.5 rounded-full mt-2 lg:mt-3 inline-block" style="background:' + hbg + ';color:' + hc + '">' + hl + '</div></div>' +
       '</div>' +
     '</div>' +
-    '<div class="grid grid-cols-4 gap-5">' +
+    '<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-5">' +
       sc('Total Penjualan', rp(ts), active.length + ' trx', 'i', 'Rp') +
       sc('Saldo Kas', rp(sd), 'bersih', sd >= 0 ? 'g' : 'r', 'Ks') +
       sc('Margin', mg.toFixed(1) + '%', mg > 20 ? 'Sehat' : 'Naik', 'a', '%') +
       sc('Total Piutang', rp(piutang), 'belum dibayar', 'r', 'Ut') +
     '</div>' +
-    '<div class="grid grid-cols-2 gap-5">' +
-      '<div class="bg-white border border-slate-200 rounded-2xl shadow-soft p-6"><div class="font-extrabold text-sm mb-4">Insight</div>' +
-        '<div class="space-y-2.5">' + insights.map(function (x) { return '<div class="p-3 bg-slate-50 rounded-xl border-l-[3px] border-brand-500 text-[13px]">' + x + '</div>'; }).join('') + '</div></div>' +
-      '<div class="bg-white border border-slate-200 rounded-2xl shadow-soft p-6"><div class="font-extrabold text-sm mb-4">Rekomendasi</div>' +
-        '<div class="space-y-2.5">' + recos.map(function (x) { return '<div class="p-3 bg-slate-50 rounded-xl text-[13px]">' + x + '</div>'; }).join('') + '</div></div>' +
+    '<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-5">' +
+      '<div class="bg-white border border-slate-200 rounded-2xl shadow-soft p-4 lg:p-6"><div class="font-extrabold text-sm mb-4">Insight</div>' +
+        '<div class="space-y-2.5">' + insights.map(function (x) { return '<div class="p-3 bg-slate-50 rounded-xl border-l-[3px] border-brand-500 text-[12.5px] lg:text-[13px]">' + x + '</div>'; }).join('') + '</div></div>' +
+      '<div class="bg-white border border-slate-200 rounded-2xl shadow-soft p-4 lg:p-6"><div class="font-extrabold text-sm mb-4">Rekomendasi</div>' +
+        '<div class="space-y-2.5">' + recos.map(function (x) { return '<div class="p-3 bg-slate-50 rounded-xl text-[12.5px] lg:text-[13px]">' + x + '</div>'; }).join('') + '</div></div>' +
     '</div>' +
   '</div>';
 }
 
 /* ================ LAPORAN ================ */
 function vLap() {
-  return '<div class="space-y-6">' +
-    '<div class="bg-white border border-slate-200 rounded-2xl shadow-soft p-5 flex flex-wrap items-center gap-4">' +
+  return '<div class="space-y-4 lg:space-y-6">' +
+    '<div class="bg-white border border-slate-200 rounded-2xl shadow-soft p-4 lg:p-5 flex flex-wrap items-center gap-2 lg:gap-4">' +
       '<div class="text-sm font-extrabold text-slate-700">Periode:</div>' +
-      '<button onclick="setLap(\'today\')" data-lap="today" class="lapBtn px-4 py-2 bg-brand-600 text-white text-xs font-bold rounded-lg shadow-md">Hari Ini</button>' +
-      '<button onclick="setLap(\'week\')" data-lap="week" class="lapBtn px-4 py-2 bg-white border border-slate-200 text-slate-600 text-xs font-bold rounded-lg">Minggu Ini</button>' +
-      '<button onclick="setLap(\'month\')" data-lap="month" class="lapBtn px-4 py-2 bg-white border border-slate-200 text-slate-600 text-xs font-bold rounded-lg">Bulan Ini</button>' +
-      '<button onclick="setLap(\'custom\')" data-lap="custom" class="lapBtn px-4 py-2 bg-white border border-slate-200 text-slate-600 text-xs font-bold rounded-lg">Custom</button>' +
-      '<div id="lapCustom" class="hidden flex items-center gap-2 ml-auto">' +
+      '<button onclick="setLap(\'today\')" data-lap="today" class="lapBtn px-3 lg:px-4 py-2 bg-brand-600 text-white text-xs font-bold rounded-lg shadow-md">Hari Ini</button>' +
+      '<button onclick="setLap(\'week\')" data-lap="week" class="lapBtn px-3 lg:px-4 py-2 bg-white border border-slate-200 text-slate-600 text-xs font-bold rounded-lg">Minggu Ini</button>' +
+      '<button onclick="setLap(\'month\')" data-lap="month" class="lapBtn px-3 lg:px-4 py-2 bg-white border border-slate-200 text-slate-600 text-xs font-bold rounded-lg">Bulan Ini</button>' +
+      '<button onclick="setLap(\'custom\')" data-lap="custom" class="lapBtn px-3 lg:px-4 py-2 bg-white border border-slate-200 text-slate-600 text-xs font-bold rounded-lg">Custom</button>' +
+      '<div id="lapCustom" class="hidden flex items-center gap-2 w-full lg:w-auto lg:ml-auto flex-wrap">' +
         '<input type="date" id="lapFrom" class="px-3 py-2 border-2 border-slate-200 rounded-lg text-xs font-semibold focus:border-brand-500 outline-none">' +
         '<span class="text-slate-400 text-xs">s/d</span>' +
         '<input type="date" id="lapTo" class="px-3 py-2 border-2 border-slate-200 rounded-lg text-xs font-semibold focus:border-brand-500 outline-none">' +
@@ -323,8 +335,8 @@ function setLap(period) {
   LAP.period = period;
   var els = document.querySelectorAll('.lapBtn');
   for (var i = 0; i < els.length; i++) {
-    if (els[i].dataset.lap === period) els[i].className = 'lapBtn px-4 py-2 bg-brand-600 text-white text-xs font-bold rounded-lg shadow-md';
-    else els[i].className = 'lapBtn px-4 py-2 bg-white border border-slate-200 text-slate-600 text-xs font-bold rounded-lg';
+    if (els[i].dataset.lap === period) els[i].className = 'lapBtn px-3 lg:px-4 py-2 bg-brand-600 text-white text-xs font-bold rounded-lg shadow-md';
+    else els[i].className = 'lapBtn px-3 lg:px-4 py-2 bg-white border border-slate-200 text-slate-600 text-xs font-bold rounded-lg';
   }
   if (period === 'custom') {
     $('lapCustom').classList.remove('hidden');
@@ -379,44 +391,44 @@ function rLap() {
 
   var topHtml = topProd.length
     ? topProd.map(function (p, idx) {
-        return '<tr class="border-b border-slate-100"><td class="px-6 py-3.5"><div class="flex items-center gap-3"><div class="w-7 h-7 rounded-lg bg-gradient-to-br from-slate-900 to-brand-700 text-white flex items-center justify-center font-black text-xs">' + (idx + 1) + '</div><span class="text-sm font-bold">' + esc(p.nama) + '</span></div></td>' +
-          '<td class="px-6 py-3.5 text-right font-bold">' + p.qty + '</td>' +
-          '<td class="px-6 py-3.5 text-right font-bold text-brand-600">' + rp(p.rev) + '</td>' +
-          '<td class="px-6 py-3.5 text-right font-bold text-emerald-600">' + rp(p.laba) + '</td></tr>';
+        return '<tr class="border-b border-slate-100"><td class="px-3 lg:px-6 py-3.5"><div class="flex items-center gap-2 lg:gap-3"><div class="w-6 h-6 lg:w-7 lg:h-7 rounded-lg bg-gradient-to-br from-slate-900 to-brand-700 text-white flex items-center justify-center font-black text-[10px] lg:text-xs flex-shrink-0">' + (idx + 1) + '</div><span class="text-xs lg:text-sm font-bold">' + esc(p.nama) + '</span></div></td>' +
+          '<td class="px-3 lg:px-6 py-3.5 text-right font-bold text-xs lg:text-sm">' + p.qty + '</td>' +
+          '<td class="px-3 lg:px-6 py-3.5 text-right font-bold text-brand-600 text-xs lg:text-sm">' + rp(p.rev) + '</td>' +
+          '<td class="px-3 lg:px-6 py-3.5 text-right font-bold text-emerald-600 text-xs lg:text-sm">' + rp(p.laba) + '</td></tr>';
       }).join('')
     : '<tr><td colspan="4" class="px-6 py-12 text-center text-slate-400 text-sm">Tidak ada penjualan</td></tr>';
 
   var tidakLakuHtml = tidakLaku.length
     ? tidakLaku.slice(0, 15).map(function (p) {
-        return '<tr class="border-b border-slate-100"><td class="px-6 py-3.5"><div class="text-sm font-bold">' + esc(p.nama) + '</div></td>' +
-          '<td class="px-6 py-3.5 text-right"><span class="px-2.5 py-1 ' + (p.stok <= 3 ? 'bg-red-100 text-red-700' : 'bg-slate-100') + ' text-[11px] font-bold rounded-full">' + p.stok + '</span></td>' +
-          '<td class="px-6 py-3.5 text-right text-sm">' + rp(p.harga_jual) + '</td></tr>';
+        return '<tr class="border-b border-slate-100"><td class="px-3 lg:px-6 py-3.5"><div class="text-xs lg:text-sm font-bold">' + esc(p.nama) + '</div></td>' +
+          '<td class="px-3 lg:px-6 py-3.5 text-right"><span class="px-2.5 py-1 ' + (p.stok <= 3 ? 'bg-red-100 text-red-700' : 'bg-slate-100') + ' text-[11px] font-bold rounded-full">' + p.stok + '</span></td>' +
+          '<td class="px-3 lg:px-6 py-3.5 text-right text-xs lg:text-sm">' + rp(p.harga_jual) + '</td></tr>';
       }).join('')
     : '<tr><td colspan="3" class="px-6 py-12 text-center text-slate-400 text-sm">Semua produk terjual</td></tr>';
 
   var hampirHabisHtml = hampirHabis.length
     ? hampirHabis.map(function (p) {
-        return '<tr class="border-b border-slate-100"><td class="px-6 py-3.5"><div class="text-sm font-bold">' + esc(p.nama) + '</div></td>' +
-          '<td class="px-6 py-3.5 text-right"><span class="px-2.5 py-1 ' + (p.stok <= 3 ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700') + ' text-[11px] font-bold rounded-full">' + p.stok + '</span></td>' +
-          '<td class="px-6 py-3.5 text-right"><button onclick="fAddStok(\'' + p.id + '\')" class="px-3 py-1.5 bg-emerald-600 text-white text-xs font-bold rounded-lg">+ Stok</button></td></tr>';
+        return '<tr class="border-b border-slate-100"><td class="px-3 lg:px-6 py-3.5"><div class="text-xs lg:text-sm font-bold">' + esc(p.nama) + '</div></td>' +
+          '<td class="px-3 lg:px-6 py-3.5 text-right"><span class="px-2.5 py-1 ' + (p.stok <= 3 ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700') + ' text-[11px] font-bold rounded-full">' + p.stok + '</span></td>' +
+          '<td class="px-3 lg:px-6 py-3.5 text-right"><button onclick="fAddStok(\'' + p.id + '\')" class="px-2 lg:px-3 py-1.5 bg-emerald-600 text-white text-[10px] lg:text-xs font-bold rounded-lg">+ Stok</button></td></tr>';
       }).join('')
     : '<tr><td colspan="3" class="px-6 py-12 text-center text-slate-400 text-sm">Semua stok aman</td></tr>';
 
-  var content = '<div class="space-y-6">' +
-    '<div class="bg-brand-50 border border-brand-200 rounded-2xl p-4 text-sm text-brand-900"><b>Periode:</b> ' + new Date(from).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }) + ' s/d ' + new Date(to).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }) + '</div>' +
-    '<div class="grid grid-cols-5 gap-5">' +
+  var content = '<div class="space-y-4 lg:space-y-6">' +
+    '<div class="bg-brand-50 border border-brand-200 rounded-2xl p-3 lg:p-4 text-xs lg:text-sm text-brand-900"><b>Periode:</b> ' + new Date(from).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }) + ' s/d ' + new Date(to).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }) + '</div>' +
+    '<div class="grid grid-cols-2 lg:grid-cols-5 gap-3 lg:gap-5">' +
       sc('Total Transaksi', totalTrx, 'sukses', 'i', 'Tx') +
       sc('Total Omzet', rp(totalOmzet), 'pendapatan', 'g', 'Rp') +
       sc('Total Laba', rp(totalLaba), 'kotor', 'a', 'Lb') +
       sc('Rata-rata', rp(avgTrx), 'per transaksi', 'b', 'Av') +
       sc('Piutang Baru', rp(piutangBaru), 'belum dibayar', 'r', 'Ut') +
     '</div>' +
-    '<div class="bg-white border border-slate-200 rounded-2xl shadow-soft overflow-hidden"><div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between"><div class="font-extrabold text-base">Produk Paling Laku</div><span class="px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full">Top ' + topProd.length + '</span></div>' +
-      '<table class="w-full"><thead class="bg-slate-50"><tr><th class="text-left px-6 py-3.5 text-[11px] uppercase font-extrabold text-slate-500">Produk</th><th class="text-right px-6 py-3.5 text-[11px] uppercase font-extrabold text-slate-500">Qty</th><th class="text-right px-6 py-3.5 text-[11px] uppercase font-extrabold text-slate-500">Omzet</th><th class="text-right px-6 py-3.5 text-[11px] uppercase font-extrabold text-slate-500">Laba</th></tr></thead><tbody>' + topHtml + '</tbody></table></div>' +
-    '<div class="bg-white border border-slate-200 rounded-2xl shadow-soft overflow-hidden"><div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between"><div class="font-extrabold text-base">Produk Tidak Laku</div><span class="px-3 py-1 bg-slate-100 text-xs font-bold rounded-full">' + tidakLaku.length + '</span></div>' +
-      '<table class="w-full"><thead class="bg-slate-50"><tr><th class="text-left px-6 py-3.5 text-[11px] uppercase font-extrabold text-slate-500">Produk</th><th class="text-right px-6 py-3.5 text-[11px] uppercase font-extrabold text-slate-500">Stok</th><th class="text-right px-6 py-3.5 text-[11px] uppercase font-extrabold text-slate-500">Harga</th></tr></thead><tbody>' + tidakLakuHtml + '</tbody></table></div>' +
-    '<div class="bg-white border border-slate-200 rounded-2xl shadow-soft overflow-hidden"><div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between"><div class="font-extrabold text-base">Produk Hampir Habis</div><span class="px-3 py-1 bg-amber-100 text-amber-700 text-xs font-bold rounded-full">' + hampirHabis.length + '</span></div>' +
-      '<table class="w-full"><thead class="bg-slate-50"><tr><th class="text-left px-6 py-3.5 text-[11px] uppercase font-extrabold text-slate-500">Produk</th><th class="text-right px-6 py-3.5 text-[11px] uppercase font-extrabold text-slate-500">Stok</th><th class="text-right px-6 py-3.5 text-[11px] uppercase font-extrabold text-slate-500">Aksi</th></tr></thead><tbody>' + hampirHabisHtml + '</tbody></table></div>' +
+    '<div class="bg-white border border-slate-200 rounded-2xl shadow-soft overflow-hidden"><div class="px-4 lg:px-6 py-4 lg:py-5 border-b border-slate-100 flex items-center justify-between"><div class="font-extrabold text-sm lg:text-base">Produk Paling Laku</div><span class="px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full">Top ' + topProd.length + '</span></div>' +
+      '<div class="overflow-x-auto"><table class="w-full"><thead class="bg-slate-50"><tr><th class="text-left px-3 lg:px-6 py-3.5 text-[10.5px] lg:text-[11px] uppercase font-extrabold text-slate-500">Produk</th><th class="text-right px-3 lg:px-6 py-3.5 text-[10.5px] lg:text-[11px] uppercase font-extrabold text-slate-500">Qty</th><th class="text-right px-3 lg:px-6 py-3.5 text-[10.5px] lg:text-[11px] uppercase font-extrabold text-slate-500">Omzet</th><th class="text-right px-3 lg:px-6 py-3.5 text-[10.5px] lg:text-[11px] uppercase font-extrabold text-slate-500">Laba</th></tr></thead><tbody>' + topHtml + '</tbody></table></div></div>' +
+    '<div class="bg-white border border-slate-200 rounded-2xl shadow-soft overflow-hidden"><div class="px-4 lg:px-6 py-4 lg:py-5 border-b border-slate-100 flex items-center justify-between"><div class="font-extrabold text-sm lg:text-base">Produk Tidak Laku</div><span class="px-3 py-1 bg-slate-100 text-xs font-bold rounded-full">' + tidakLaku.length + '</span></div>' +
+      '<div class="overflow-x-auto"><table class="w-full"><thead class="bg-slate-50"><tr><th class="text-left px-3 lg:px-6 py-3.5 text-[10.5px] lg:text-[11px] uppercase font-extrabold text-slate-500">Produk</th><th class="text-right px-3 lg:px-6 py-3.5 text-[10.5px] lg:text-[11px] uppercase font-extrabold text-slate-500">Stok</th><th class="text-right px-3 lg:px-6 py-3.5 text-[10.5px] lg:text-[11px] uppercase font-extrabold text-slate-500">Harga</th></tr></thead><tbody>' + tidakLakuHtml + '</tbody></table></div></div>' +
+    '<div class="bg-white border border-slate-200 rounded-2xl shadow-soft overflow-hidden"><div class="px-4 lg:px-6 py-4 lg:py-5 border-b border-slate-100 flex items-center justify-between"><div class="font-extrabold text-sm lg:text-base">Produk Hampir Habis</div><span class="px-3 py-1 bg-amber-100 text-amber-700 text-xs font-bold rounded-full">' + hampirHabis.length + '</span></div>' +
+      '<div class="overflow-x-auto"><table class="w-full"><thead class="bg-slate-50"><tr><th class="text-left px-3 lg:px-6 py-3.5 text-[10.5px] lg:text-[11px] uppercase font-extrabold text-slate-500">Produk</th><th class="text-right px-3 lg:px-6 py-3.5 text-[10.5px] lg:text-[11px] uppercase font-extrabold text-slate-500">Stok</th><th class="text-right px-3 lg:px-6 py-3.5 text-[10.5px] lg:text-[11px] uppercase font-extrabold text-slate-500">Aksi</th></tr></thead><tbody>' + hampirHabisHtml + '</tbody></table></div></div>' +
   '</div>';
 
   $('lapContent').innerHTML = content;
@@ -424,12 +436,12 @@ function rLap() {
 
 /* ================ PRODUK ================ */
 function vPrd() {
-  return '<div class="space-y-6">' +
-    '<div class="bg-white border border-slate-200 rounded-2xl shadow-soft p-5 flex items-center gap-3 flex-wrap">' +
-      '<input id="qp" oninput="rPrd()" placeholder="Cari produk..." class="flex-1 min-w-[240px] px-4 py-2.5 border-2 border-slate-200 rounded-xl text-sm focus:border-brand-500 outline-none">' +
-      '<button onclick="fPrd()" class="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold rounded-xl shadow-lg">+ Tambah Produk</button>' +
+  return '<div class="space-y-4 lg:space-y-6">' +
+    '<div class="bg-white border border-slate-200 rounded-2xl shadow-soft p-4 lg:p-5 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">' +
+      '<input id="qp" oninput="rPrd()" placeholder="Cari produk..." class="flex-1 px-4 py-2.5 border-2 border-slate-200 rounded-xl text-sm focus:border-brand-500 outline-none">' +
+      '<button onclick="fPrd()" class="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold rounded-xl shadow-lg whitespace-nowrap">+ Tambah Produk</button>' +
     '</div>' +
-    '<div id="pl" class="grid grid-cols-4 gap-5"></div>' +
+    '<div id="pl" class="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-5"></div>' +
   '</div>';
 }
 
@@ -444,23 +456,23 @@ function rPrd() {
     el.innerHTML = '<div class="bg-white border border-slate-200 rounded-2xl p-16 text-center"><div class="text-slate-500 text-sm mb-5">Belum ada produk</div><button onclick="fPrd()" class="px-5 py-2.5 bg-brand-600 text-white text-sm font-bold rounded-xl">+ Tambah Produk</button></div>';
     return;
   }
-  el.className = 'grid grid-cols-4 gap-5';
+  el.className = 'grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-5';
   el.innerHTML = list.map(function (p) {
     var bdg = p.stok <= 3 ? 'bg-red-100 text-red-700' : p.stok <= 10 ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700';
     return '<div class="bg-white border border-slate-200 rounded-2xl shadow-soft overflow-hidden hover:shadow-card">' +
-      '<div class="p-5"><div class="text-sm font-extrabold text-slate-800 mb-1">' + esc(p.nama) + '</div>' +
-        '<div class="text-[11px] text-slate-500 font-mono">' + esc(p.kode || '-') + '</div></div>' +
-      '<div class="px-5 py-3 bg-slate-50 border-y border-slate-100 flex justify-center"><svg class="bc-' + p.id + '" style="max-width:100%;height:36px"></svg></div>' +
-      '<div class="p-5"><div class="flex items-center justify-between mb-4">' +
-        '<div><div class="text-[10px] font-extrabold text-slate-500 uppercase">Harga Jual</div><div class="text-lg font-black text-brand-600">' + rp(p.harga_jual) + '</div></div>' +
-        '<button onclick="fAddStok(\'' + p.id + '\')" class="px-2.5 py-1 ' + bdg + ' text-[11px] font-bold rounded-full">' + p.stok + ' +</button></div>' +
-        '<div class="flex gap-2"><button onclick="fPrd(\'' + p.id + '\')" class="flex-1 py-2 bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-lg">Edit</button>' +
-        '<button onclick="dPrd(\'' + p.id + '\')" class="px-3 py-2 bg-red-50 text-red-600 text-xs font-bold rounded-lg">Hapus</button></div></div>' +
+      '<div class="p-3 lg:p-5"><div class="text-xs lg:text-sm font-extrabold text-slate-800 mb-1 leading-tight">' + esc(p.nama) + '</div>' +
+        '<div class="text-[10px] lg:text-[11px] text-slate-500 font-mono truncate">' + esc(p.kode || '-') + '</div></div>' +
+      '<div class="px-3 lg:px-5 py-2 lg:py-3 bg-slate-50 border-y border-slate-100 flex justify-center overflow-hidden"><svg class="bc-' + p.id + '" style="max-width:100%;height:32px"></svg></div>' +
+      '<div class="p-3 lg:p-5"><div class="flex items-center justify-between mb-3 lg:mb-4 gap-2">' +
+        '<div class="min-w-0"><div class="text-[9.5px] lg:text-[10px] font-extrabold text-slate-500 uppercase">Harga</div><div class="text-sm lg:text-lg font-black text-brand-600">' + rp(p.harga_jual) + '</div></div>' +
+        '<button onclick="fAddStok(\'' + p.id + '\')" class="px-2 lg:px-2.5 py-1 ' + bdg + ' text-[10px] lg:text-[11px] font-bold rounded-full flex-shrink-0">' + p.stok + ' +</button></div>' +
+        '<div class="flex gap-1 lg:gap-2"><button onclick="fPrd(\'' + p.id + '\')" class="flex-1 py-1.5 lg:py-2 bg-white border border-slate-200 text-slate-700 text-[11px] lg:text-xs font-bold rounded-lg">Edit</button>' +
+        '<button onclick="dPrd(\'' + p.id + '\')" class="px-2 lg:px-3 py-1.5 lg:py-2 bg-red-50 text-red-600 text-[11px] lg:text-xs font-bold rounded-lg">Hapus</button></div></div>' +
     '</div>';
   }).join('');
   list.forEach(function (p) {
     var e = document.querySelector('.bc-' + p.id);
-    if (e && window.JsBarcode && p.barcode) { try { JsBarcode(e, p.barcode, { format: 'CODE128', displayValue: true, fontSize: 8, height: 28, margin: 0, width: 1 }); } catch (err) {} }
+    if (e && window.JsBarcode && p.barcode) { try { JsBarcode(e, p.barcode, { format: 'CODE128', displayValue: true, fontSize: 7, height: 26, margin: 0, width: 0.9 }); } catch (err) {} }
   });
 }
 
@@ -472,14 +484,14 @@ function fPrd(id) {
   var body = '<div class="p-6 space-y-4">' +
     (!p ? '<div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800">Kalau nama sudah ada, otomatis buka form edit.</div>' : '') +
     '<div class="p-4 bg-slate-900 rounded-xl text-center"><div class="bg-white p-2 rounded-lg flex justify-center"><svg id="mb2" style="max-width:100%;height:40px"></svg></div></div>' +
-    '<div class="grid grid-cols-2 gap-3">' +
+    '<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">' +
       '<div><label class="' + lc + '">Kode</label><input id="fk" class="' + ic + '" value="' + esc(p ? p.kode : 'SKU-' + String(S.products.length + 1).padStart(4, '0')) + '"></div>' +
       '<div><label class="' + lc + '">Kategori</label><input id="ft" class="' + ic + '" value="' + esc(p ? p.kategori : 'Umum') + '"></div></div>' +
     '<div><label class="' + lc + '">Nama Produk *</label><input id="fn" class="' + ic + '" value="' + esc(p ? p.nama : '') + '"></div>' +
-    '<div class="grid grid-cols-2 gap-3">' +
+    '<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">' +
       '<div><label class="' + lc + '">Harga Beli</label><input id="fb" type="text" inputmode="numeric" class="' + ic + '" value="' + fmtNum(p ? p.harga_beli : 0) + '" oninput="onNumInput(this)"></div>' +
       '<div><label class="' + lc + '">Harga Jual</label><input id="fj" type="text" inputmode="numeric" class="' + ic + '" value="' + fmtNum(p ? p.harga_jual : 0) + '" oninput="onNumInput(this)"></div></div>' +
-    '<div class="grid grid-cols-2 gap-3">' +
+    '<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">' +
       '<div><label class="' + lc + '">Stok</label><input id="fs" type="number" class="' + ic + '" value="' + (p ? p.stok : 0) + '"></div>' +
       '<div><label class="' + lc + '">Satuan</label><input id="fsat" class="' + ic + '" value="' + esc(p ? p.satuan : 'pcs') + '"></div></div>' +
   '</div>';
@@ -528,30 +540,32 @@ function vKasir() {
   S.q = ''; S.cat = 'all';
   var cs = ['all'].concat(Array.from(new Set(S.products.map(function (p) { return p.kategori; }))));
   var cats = cs.map(function (c) {
-    var cls = c === 'all' ? 'px-3.5 py-2 bg-brand-600 text-white text-xs font-bold rounded-lg' : 'px-3.5 py-2 bg-white border border-slate-200 text-slate-600 text-xs font-bold rounded-lg';
+    var cls = c === 'all' ? 'px-3 py-1.5 lg:px-3.5 lg:py-2 bg-brand-600 text-white text-xs font-bold rounded-lg whitespace-nowrap' : 'px-3 py-1.5 lg:px-3.5 lg:py-2 bg-white border border-slate-200 text-slate-600 text-xs font-bold rounded-lg whitespace-nowrap';
     return '<button onclick="pCat(\'' + esc(c) + '\')" data-pc="' + esc(c) + '" class="pcs ' + cls + '">' + (c === 'all' ? 'Semua' : esc(c)) + '</button>';
   }).join('');
 
-  return '<div class="grid grid-cols-[1fr_400px] gap-6 items-start">' +
-    '<div class="space-y-5">' +
-      '<div class="bg-gradient-to-br from-brand-50 to-indigo-50 border-2 border-brand-500 rounded-2xl p-5">' +
-        '<div class="flex items-center justify-between mb-3"><span class="text-sm font-extrabold text-indigo-900">Scan Barcode</span>' +
-        '<span id="ss" class="px-3 py-1 bg-emerald-100 text-emerald-700 text-[11px] font-bold rounded-full">SIAP</span></div>' +
-        '<input id="si" onkeypress="hs(event)" placeholder="Scan atau ketik barcode, tekan Enter" class="w-full px-4 py-3 bg-white border-2 border-brand-500 rounded-xl text-sm font-mono font-bold focus:ring-4 focus:ring-brand-500/20 outline-none">' +
+  return '<div class="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-4 lg:gap-6 items-start">' +
+    '<div class="space-y-3 lg:space-y-5">' +
+      '<div class="bg-gradient-to-br from-brand-50 to-indigo-50 border-2 border-brand-500 rounded-2xl p-4 lg:p-5">' +
+        '<div class="flex items-center justify-between mb-3 gap-2 flex-wrap">' +
+          '<span class="text-sm font-extrabold text-indigo-900">Scan Barcode</span>' +
+          '<button onclick="fQRScanner()" class="px-2.5 lg:px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[10.5px] lg:text-[11px] font-bold rounded-lg">📱 Scanner HP</button>' +
+        '</div>' +
+        '<input id="si" onkeypress="hs(event)" placeholder="Scan / ketik barcode, Enter" class="w-full px-4 py-3 bg-white border-2 border-brand-500 rounded-xl text-sm font-mono font-bold focus:ring-4 focus:ring-brand-500/20 outline-none">' +
         '<div class="grid grid-cols-2 gap-2 mt-3"><button onclick="ms()" class="py-2 bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-lg">Input Manual</button>' +
         '<button onclick="document.getElementById(\'si\').focus()" class="py-2 bg-brand-600 text-white text-xs font-bold rounded-lg">Fokus</button></div>' +
       '</div>' +
-      '<div class="bg-white border border-slate-200 rounded-2xl shadow-soft p-5">' +
+      '<div class="bg-white border border-slate-200 rounded-2xl shadow-soft p-4 lg:p-5">' +
         '<input id="ps" oninput="S.q=this.value;rGrid()" placeholder="Cari produk..." class="w-full px-4 py-2.5 border-2 border-slate-200 rounded-xl text-sm mb-3 focus:border-brand-500 outline-none">' +
         '<div class="flex flex-wrap gap-2">' + cats + '</div>' +
       '</div>' +
-      '<div id="pg" class="grid grid-cols-5 gap-3"></div>' +
+      '<div id="pg" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 lg:gap-3"></div>' +
     '</div>' +
-    '<div class="sticky top-24">' +
+    '<div class="lg:sticky lg:top-24">' +
       '<div class="bg-white border border-slate-200 rounded-2xl shadow-card overflow-hidden">' +
-        '<div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between"><span class="text-sm font-extrabold">Keranjang</span><span id="cc" class="text-xs text-slate-500">0 item</span></div>' +
+        '<div class="px-4 lg:px-5 py-4 border-b border-slate-100 flex items-center justify-between"><span class="text-sm font-extrabold">Keranjang</span><span id="cc" class="text-xs text-slate-500">0 item</span></div>' +
         '<div id="cl" class="max-h-72 overflow-y-auto"></div>' +
-        '<div id="cs" class="p-5 bg-slate-50 border-t border-slate-100"></div>' +
+        '<div id="cs" class="p-4 lg:p-5 bg-slate-50 border-t border-slate-100"></div>' +
       '</div>' +
     '</div>' +
   '</div>';
@@ -561,7 +575,7 @@ function pCat(c) {
   S.cat = c;
   var els = document.querySelectorAll('.pcs');
   for (var i = 0; i < els.length; i++) {
-    els[i].className = 'pcs ' + (els[i].dataset.pc === c ? 'px-3.5 py-2 bg-brand-600 text-white text-xs font-bold rounded-lg' : 'px-3.5 py-2 bg-white border border-slate-200 text-slate-600 text-xs font-bold rounded-lg');
+    els[i].className = 'pcs ' + (els[i].dataset.pc === c ? 'px-3 py-1.5 lg:px-3.5 lg:py-2 bg-brand-600 text-white text-xs font-bold rounded-lg whitespace-nowrap' : 'px-3 py-1.5 lg:px-3.5 lg:py-2 bg-white border border-slate-200 text-slate-600 text-xs font-bold rounded-lg whitespace-nowrap');
   }
   rGrid();
 }
@@ -570,14 +584,14 @@ function rGrid() {
   var q = (S.q || '').toLowerCase();
   var list = S.products.filter(function (p) { return (!q || p.nama.toLowerCase().indexOf(q) >= 0 || (p.barcode || '').indexOf(q) >= 0) && (S.cat === 'all' || p.kategori === S.cat); });
   var el = $('pg'); if (!el) return;
-  if (!list.length) { el.className = ''; el.innerHTML = '<div class="bg-white border border-slate-200 rounded-2xl p-12 text-center text-slate-400 text-sm">Tidak ditemukan</div>'; return; }
-  el.className = 'grid grid-cols-5 gap-3';
+  if (!list.length) { el.className = ''; el.innerHTML = '<div class="bg-white border border-slate-200 rounded-2xl p-12 text-center text-slate-400 text-sm col-span-full">Tidak ditemukan</div>'; return; }
+  el.className = 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 lg:gap-3';
   el.innerHTML = list.map(function (p) {
     var out = Number(p.stok) <= 0;
-    return '<div class="pcard bg-white border border-slate-200 rounded-xl p-3 ' + (out ? 'out' : '') + '" data-pid="' + p.id + '">' +
-      '<div class="aspect-square rounded-lg bg-slate-100 flex items-center justify-center text-xs font-extrabold text-slate-500 mb-2.5">' + esc(p.nama.slice(0, 3).toUpperCase()) + '</div>' +
-      '<div class="text-xs font-bold text-slate-800 leading-tight mb-1.5" style="min-height:32px">' + esc(p.nama) + '</div>' +
-      '<div class="text-sm font-black text-brand-600">' + rp(p.harga_jual) + '</div></div>';
+    return '<div class="pcard bg-white border border-slate-200 rounded-xl p-2.5 lg:p-3 ' + (out ? 'out' : '') + '" data-pid="' + p.id + '">' +
+      '<div class="aspect-square rounded-lg bg-slate-100 flex items-center justify-center text-[10px] lg:text-xs font-extrabold text-slate-500 mb-2">' + esc(p.nama.slice(0, 3).toUpperCase()) + '</div>' +
+      '<div class="text-[11px] lg:text-xs font-bold text-slate-800 leading-tight mb-1" style="min-height:28px">' + esc(p.nama) + '</div>' +
+      '<div class="text-xs lg:text-sm font-black text-brand-600">' + rp(p.harga_jual) + '</div></div>';
   }).join('');
   el.onclick = function (e) { var c = e.target.closest('.pcard'); if (!c || c.classList.contains('out')) return; e.preventDefault(); addC(c.dataset.pid); };
 }
@@ -633,14 +647,14 @@ function rCart() {
     var html = '';
     for (var j = 0; j < S.cart.length; j++) {
       var it = S.cart[j];
-      html += '<div class="px-5 py-3 border-b border-slate-100 flex items-center gap-3 last:border-0">' +
+      html += '<div class="px-4 lg:px-5 py-3 border-b border-slate-100 flex items-center gap-2 lg:gap-3 last:border-0">' +
         '<div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-[10px] font-extrabold text-slate-500 flex-shrink-0">' + esc(it.nama.slice(0, 2).toUpperCase()) + '</div>' +
         '<div class="flex-1 min-w-0"><div class="text-xs font-bold truncate">' + esc(it.nama) + '</div><div class="text-[11px] text-slate-500">' + rp(it.harga) + '</div></div>' +
-        '<div class="flex items-center border border-slate-200 rounded-md overflow-hidden">' +
+        '<div class="flex items-center border border-slate-200 rounded-md overflow-hidden flex-shrink-0">' +
         '<button onclick="chQ(\'' + it.id + '\',-1)" class="w-6 h-6 bg-slate-50 text-xs font-bold">-</button>' +
         '<span class="w-6 text-center text-xs font-extrabold">' + it.qty + '</span>' +
         '<button onclick="chQ(\'' + it.id + '\',1)" class="w-6 h-6 bg-slate-50 text-xs font-bold">+</button></div>' +
-        '<div class="text-xs font-extrabold text-right min-w-[70px]">' + rp(it.harga * it.qty) + '</div></div>';
+        '<div class="text-xs font-extrabold text-right min-w-[60px] lg:min-w-[70px] flex-shrink-0">' + rp(it.harga * it.qty) + '</div></div>';
     }
     el.innerHTML = html;
   }
@@ -667,10 +681,8 @@ function rCart() {
   var cH = mb === 'hutang' ? 'border-red-500 bg-red-50 text-red-700' : 'border-slate-200 bg-white text-slate-500';
 
   sm.innerHTML =
-    '<div class="mb-4">' +
-      '<label class="block text-[11px] font-bold text-slate-600 uppercase mb-1.5">Pelanggan <span class="text-red-500">(wajib jika Hutang)</span></label>' +
-      '<select id="posCust" class="w-full px-3 py-2 border-2 border-slate-200 rounded-lg text-sm font-semibold focus:border-brand-500 outline-none">' + custOpts + '</select>' +
-    '</div>' +
+    '<div class="mb-4"><label class="block text-[11px] font-bold text-slate-600 uppercase mb-1.5">Pelanggan <span class="text-red-500">(wajib jika Hutang)</span></label>' +
+    '<select id="posCust" class="w-full px-3 py-2 border-2 border-slate-200 rounded-lg text-sm font-semibold focus:border-brand-500 outline-none">' + custOpts + '</select></div>' +
     '<div class="mb-4"><label class="block text-[11px] font-bold text-slate-600 uppercase mb-1.5">Metode Bayar</label>' +
       '<div class="grid grid-cols-3 gap-2">' +
         '<button type="button" onclick="setMetode(\'tunai\')" class="py-2 rounded-lg border-2 ' + cT + ' font-bold text-xs">Tunai</button>' +
@@ -681,12 +693,12 @@ function rCart() {
     '<div class="space-y-2 mb-4">' +
       '<div class="flex justify-between text-sm"><span class="text-slate-500">Subtotal</span><b>' + rp(sub) + '</b></div>' +
       '<div class="flex justify-between items-center text-sm"><span class="text-slate-500">Diskon</span>' +
-        '<div class="flex gap-1 items-center"><input id="inpDiskon" type="text" inputmode="numeric" value="' + fmtNum(dis) + '" placeholder="0" oninput="onNumInput(this,\'diskon\')" class="w-24 px-2 py-1 text-right border border-slate-200 rounded-md text-xs font-semibold focus:border-brand-500 outline-none"><button type="button" onclick="S.diskon=0;document.getElementById(\'inpDiskon\').value=\'\';rCart()" class="w-6 h-6 rounded bg-red-50 text-red-600 text-[10px] font-bold">X</button></div>' +
+        '<div class="flex gap-1 items-center"><input id="inpDiskon" type="text" inputmode="numeric" value="' + fmtNum(dis) + '" placeholder="0" oninput="onNumInput(this,\'diskon\')" class="w-24 px-2 py-1 text-right border border-slate-200 rounded-md text-xs font-semibold focus:border-brand-500 outline-none"><button type="button" onclick="S.diskon=0;document.getElementById(\'inpDiskon\').value=\'\';rCart()" class="w-6 h-6 rounded bg-red-50 text-red-600 text-[10px] font-bold flex-shrink-0">X</button></div>' +
       '</div>' +
       (mb !== 'hutang' ? '<div class="flex justify-between items-center text-sm"><span class="text-slate-500">Bayar</span>' +
-        '<div class="flex gap-1 items-center"><input id="inpBayar" type="text" inputmode="numeric" value="' + fmtNum(byr) + '" placeholder="0" oninput="onNumInput(this,\'bayar\')" class="w-32 px-2 py-1 text-right border border-slate-200 rounded-md text-xs font-semibold focus:border-brand-500 outline-none"><button type="button" onclick="S.bayar=0;document.getElementById(\'inpBayar\').value=\'\';rCart()" class="w-6 h-6 rounded bg-red-50 text-red-600 text-[10px] font-bold">X</button></div>' +
+        '<div class="flex gap-1 items-center"><input id="inpBayar" type="text" inputmode="numeric" value="' + fmtNum(byr) + '" placeholder="0" oninput="onNumInput(this,\'bayar\')" class="w-32 px-2 py-1 text-right border border-slate-200 rounded-md text-xs font-semibold focus:border-brand-500 outline-none"><button type="button" onclick="S.bayar=0;document.getElementById(\'inpBayar\').value=\'\';rCart()" class="w-6 h-6 rounded bg-red-50 text-red-600 text-[10px] font-bold flex-shrink-0">X</button></div>' +
       '</div>' : '') +
-      '<div class="flex justify-between items-center pt-3 border-t-2 border-dashed border-slate-200"><span class="font-extrabold">TOTAL</span><span class="text-xl font-black ' + (mb === 'hutang' ? 'text-red-600' : 'text-brand-600') + '">' + rp(tot) + '</span></div>' +
+      '<div class="flex justify-between items-center pt-3 border-t-2 border-dashed border-slate-200"><span class="font-extrabold">TOTAL</span><span class="text-lg lg:text-xl font-black ' + (mb === 'hutang' ? 'text-red-600' : 'text-brand-600') + '">' + rp(tot) + '</span></div>' +
       (mb !== 'hutang' && (Number(S.bayar) || 0) > 0 ? '<div class="flex justify-between text-xs"><span class="text-slate-500">Kembali</span><b class="text-emerald-600" id="dispKembali">' + rp(Math.max(0, (Number(S.bayar) || 0) - tot)) + '</b></div>' : '') +
     '</div>' +
     (mb === 'hutang'
@@ -801,23 +813,23 @@ function vTrx() {
       var un = t.payment_status === 'unpaid';
       var sisa = un ? Number(t.total || 0) - Number(t.paid_amount || 0) : 0;
       rows += '<tr class="border-b border-slate-100 hover:bg-slate-50 ' + (vd ? 'bg-red-50/50' : un ? 'bg-amber-50/50' : '') + '">' +
-        '<td class="px-6 py-3.5"><b class="font-mono text-xs ' + (vd ? 'line-through text-slate-400' : '') + '">' + esc(t.invoice_no) + '</b><div class="text-[11px] text-slate-500 mt-0.5">' + esc(t.customer_nama || 'Umum') + ' · ' + esc(t.metode || 'Tunai') + '</div></td>' +
-        '<td class="px-6 py-3.5 text-xs text-slate-500">' + fDT(t.tanggal) + '</td>' +
-        '<td class="px-6 py-3.5 text-right font-bold">' + rp(t.total) + (un ? '<div class="text-[11px] text-red-600">Sisa: ' + rp(sisa) + '</div>' : '') + '</td>' +
-        '<td class="px-6 py-3.5"><span class="px-2.5 py-1 ' + (vd ? 'bg-red-100 text-red-700' : un ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700') + ' text-[11px] font-bold rounded-full">' + (vd ? 'BATAL' : un ? 'HUTANG' : 'LUNAS') + '</span></td>' +
-        '<td class="px-6 py-3.5 text-right">' + (!vd ? '<button onclick="reP(\'' + t.id + '\')" class="px-3 py-1.5 bg-white border border-slate-200 text-xs font-bold rounded-lg">Print</button>' : '') + '</td></tr>';
+        '<td class="px-3 lg:px-6 py-3.5"><b class="font-mono text-[11px] lg:text-xs ' + (vd ? 'line-through text-slate-400' : '') + '">' + esc(t.invoice_no) + '</b><div class="text-[10px] lg:text-[11px] text-slate-500 mt-0.5">' + esc(t.customer_nama || 'Umum') + ' · ' + esc(t.metode || 'Tunai') + '</div></td>' +
+        '<td class="px-3 lg:px-6 py-3.5 text-[10px] lg:text-xs text-slate-500 whitespace-nowrap">' + fDT(t.tanggal) + '</td>' +
+        '<td class="px-3 lg:px-6 py-3.5 text-right font-bold text-xs lg:text-sm whitespace-nowrap">' + rp(t.total) + (un ? '<div class="text-[10px] lg:text-[11px] text-red-600">Sisa: ' + rp(sisa) + '</div>' : '') + '</td>' +
+        '<td class="px-3 lg:px-6 py-3.5"><span class="px-2 lg:px-2.5 py-1 ' + (vd ? 'bg-red-100 text-red-700' : un ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700') + ' text-[10px] lg:text-[11px] font-bold rounded-full">' + (vd ? 'BATAL' : un ? 'HUTANG' : 'LUNAS') + '</span></td>' +
+        '<td class="px-3 lg:px-6 py-3.5 text-right">' + (!vd ? '<button onclick="reP(\'' + t.id + '\')" class="px-2 lg:px-3 py-1.5 bg-white border border-slate-200 text-[10px] lg:text-xs font-bold rounded-lg">Print</button>' : '') + '</td></tr>';
     }
   } else rows = '<tr><td colspan="5" class="px-6 py-16 text-center text-slate-400 text-sm">Belum ada transaksi</td></tr>';
   var bc = 0, hc2 = 0;
   for (var k = 0; k < list.length; k++) { if (list[k].status === 'cancelled') bc++; if (list[k].payment_status === 'unpaid') hc2++; }
-  return '<div class="space-y-6">' +
-    '<div class="grid grid-cols-4 gap-5">' + sc('Transaksi', ac.length, 'Sukses', 'i', 'Tx') + sc('Omzet', rp(tot), 'Total', 'g', 'Rp') + sc('Hutang', hc2, 'Belum bayar', 'a', 'Ut') + sc('Batal', bc, 'Void', 'r', 'X') + '</div>' +
-    '<div class="bg-white border border-slate-200 rounded-2xl shadow-soft overflow-hidden"><table class="w-full"><thead class="bg-slate-50"><tr>' +
-    '<th class="text-left px-6 py-3.5 text-[11px] uppercase font-extrabold text-slate-500">Invoice</th>' +
-    '<th class="text-left px-6 py-3.5 text-[11px] uppercase font-extrabold text-slate-500">Waktu</th>' +
-    '<th class="text-right px-6 py-3.5 text-[11px] uppercase font-extrabold text-slate-500">Total</th>' +
-    '<th class="text-left px-6 py-3.5 text-[11px] uppercase font-extrabold text-slate-500">Status</th>' +
-    '<th class="px-6 py-3.5"></th></tr></thead><tbody>' + rows + '</tbody></table></div></div>';
+  return '<div class="space-y-4 lg:space-y-6">' +
+    '<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-5">' + sc('Transaksi', ac.length, 'Sukses', 'i', 'Tx') + sc('Omzet', rp(tot), 'Total', 'g', 'Rp') + sc('Hutang', hc2, 'Belum bayar', 'a', 'Ut') + sc('Batal', bc, 'Void', 'r', 'X') + '</div>' +
+    '<div class="bg-white border border-slate-200 rounded-2xl shadow-soft overflow-hidden"><div class="overflow-x-auto"><table class="w-full"><thead class="bg-slate-50"><tr>' +
+    '<th class="text-left px-3 lg:px-6 py-3.5 text-[10.5px] lg:text-[11px] uppercase font-extrabold text-slate-500">Invoice</th>' +
+    '<th class="text-left px-3 lg:px-6 py-3.5 text-[10.5px] lg:text-[11px] uppercase font-extrabold text-slate-500">Waktu</th>' +
+    '<th class="text-right px-3 lg:px-6 py-3.5 text-[10.5px] lg:text-[11px] uppercase font-extrabold text-slate-500">Total</th>' +
+    '<th class="text-left px-3 lg:px-6 py-3.5 text-[10.5px] lg:text-[11px] uppercase font-extrabold text-slate-500">Status</th>' +
+    '<th class="px-3 lg:px-6 py-3.5"></th></tr></thead><tbody>' + rows + '</tbody></table></div></div></div>';
 }
 
 function reP(id) { var t = null; for (var i = 0; i < S.trx.length; i++) if (S.trx[i].id === id) { t = S.trx[i]; break; } if (t) prt(t, t.items || []); }
@@ -828,15 +840,15 @@ function vSup() {
   if (S.suppliers.length) {
     for (var i = 0; i < S.suppliers.length; i++) {
       var s = S.suppliers[i];
-      rows += '<tr class="border-b border-slate-100"><td class="px-6 py-4 font-bold text-sm">' + esc(s.nama) + '</td>' +
-        '<td class="px-6 py-4 text-sm">' + esc(s.kontak || '-') + '</td>' +
-        '<td class="px-6 py-4 text-sm">' + esc(s.telepon || '-') + '</td>' +
-        '<td class="px-6 py-4 text-right whitespace-nowrap"><button onclick="fSup(\'' + s.id + '\')" class="px-3 py-1.5 bg-white border text-xs font-bold rounded-lg mr-1">Edit</button>' +
-        '<button onclick="dSup(\'' + s.id + '\')" class="px-3 py-1.5 bg-red-50 text-red-600 text-xs font-bold rounded-lg">Hapus</button></td></tr>';
+      rows += '<tr class="border-b border-slate-100"><td class="px-3 lg:px-6 py-4 font-bold text-xs lg:text-sm">' + esc(s.nama) + '</td>' +
+        '<td class="px-3 lg:px-6 py-4 text-xs lg:text-sm">' + esc(s.kontak || '-') + '</td>' +
+        '<td class="px-3 lg:px-6 py-4 text-xs lg:text-sm">' + esc(s.telepon || '-') + '</td>' +
+        '<td class="px-3 lg:px-6 py-4 text-right whitespace-nowrap"><button onclick="fSup(\'' + s.id + '\')" class="px-2 lg:px-3 py-1.5 bg-white border text-[10px] lg:text-xs font-bold rounded-lg mr-1">Edit</button>' +
+        '<button onclick="dSup(\'' + s.id + '\')" class="px-2 lg:px-3 py-1.5 bg-red-50 text-red-600 text-[10px] lg:text-xs font-bold rounded-lg">Hapus</button></td></tr>';
     }
   } else rows = '<tr><td colspan="4" class="px-6 py-16 text-center text-slate-400 text-sm">Belum ada</td></tr>';
-  return '<div class="bg-white border border-slate-200 rounded-2xl shadow-soft overflow-hidden"><div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between"><div class="font-extrabold text-base">Data Supplier</div><button onclick="fSup()" class="px-4 py-2 bg-brand-600 text-white text-xs font-bold rounded-lg">+ Tambah</button></div>' +
-    '<table class="w-full"><thead class="bg-slate-50"><tr><th class="text-left px-6 py-3.5 text-[11px] uppercase font-extrabold text-slate-500">Nama</th><th class="text-left px-6 py-3.5 text-[11px] uppercase font-extrabold text-slate-500">Kontak</th><th class="text-left px-6 py-3.5 text-[11px] uppercase font-extrabold text-slate-500">Telepon</th><th></th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+  return '<div class="bg-white border border-slate-200 rounded-2xl shadow-soft overflow-hidden"><div class="px-4 lg:px-6 py-4 lg:py-5 border-b border-slate-100 flex items-center justify-between"><div class="font-extrabold text-sm lg:text-base">Data Supplier</div><button onclick="fSup()" class="px-3 lg:px-4 py-2 bg-brand-600 text-white text-xs font-bold rounded-lg">+ Tambah</button></div>' +
+    '<div class="overflow-x-auto"><table class="w-full"><thead class="bg-slate-50"><tr><th class="text-left px-3 lg:px-6 py-3.5 text-[10.5px] lg:text-[11px] uppercase font-extrabold text-slate-500">Nama</th><th class="text-left px-3 lg:px-6 py-3.5 text-[10.5px] lg:text-[11px] uppercase font-extrabold text-slate-500">Kontak</th><th class="text-left px-3 lg:px-6 py-3.5 text-[10.5px] lg:text-[11px] uppercase font-extrabold text-slate-500">Telepon</th><th></th></tr></thead><tbody>' + rows + '</tbody></table></div></div>';
 }
 
 function fSup(id) {
@@ -845,7 +857,7 @@ function fSup(id) {
   var ic = 'w-full px-4 py-2.5 border-2 border-slate-200 rounded-xl text-sm focus:border-brand-500 outline-none';
   var lc = 'block text-xs font-bold text-slate-600 uppercase mb-2';
   var body = '<div class="p-6 space-y-4"><div><label class="' + lc + '">Nama *</label><input id="sn" class="' + ic + '" value="' + esc(s ? s.nama : '') + '"></div>' +
-    '<div class="grid grid-cols-2 gap-3"><div><label class="' + lc + '">Kontak</label><input id="sk" class="' + ic + '" value="' + esc(s ? s.kontak : '') + '"></div>' +
+    '<div class="grid grid-cols-1 sm:grid-cols-2 gap-3"><div><label class="' + lc + '">Kontak</label><input id="sk" class="' + ic + '" value="' + esc(s ? s.kontak : '') + '"></div>' +
     '<div><label class="' + lc + '">Telepon</label><input id="st" class="' + ic + '" value="' + esc(s ? s.telepon : '') + '"></div></div>' +
     '<div><label class="' + lc + '">Alamat</label><input id="sa" class="' + ic + '" value="' + esc(s ? s.alamat : '') + '"></div></div>';
   md(s ? 'Edit Supplier' : 'Tambah Supplier', body, async function () {
@@ -858,7 +870,7 @@ function fSup(id) {
 }
 function dSup(id) { md('Hapus', '<div class="p-6 text-center text-sm">Yakin hapus?</div>', async function () { var r = await sb.from('suppliers').delete().eq('id', id); if (r.error) return tt('Gagal', 'err'); cm(); await loadData(S.user); rndr(); tt('Terhapus', 'info'); }, 'Hapus'); }
 
-/* ================ PELANGGAN & PIUTANG ================ */
+/* ================ PELANGGAN ================ */
 function vCst() {
   var sorted = S.customers.slice().sort(function (a, b) {
     var sa = utangScore(a.id), sb = utangScore(b.id);
@@ -879,45 +891,45 @@ function vCst() {
       var sc2 = utangScore(c.id);
       var bc = 'bg-slate-100 text-slate-600', bt = 'Tidak Ngutang';
       if (u > 0) {
-        if (sc2.status === 'telat') { bc = 'bg-red-100 text-red-700'; bt = 'Terlambat ' + sc2.days + ' hr'; }
-        else if (sc2.status === 'hampir') { bc = 'bg-amber-100 text-amber-700'; bt = 'Jatuh Tempo H-' + sc2.days; }
+        if (sc2.status === 'telat') { bc = 'bg-red-100 text-red-700'; bt = 'Telat ' + sc2.days + ' hr'; }
+        else if (sc2.status === 'hampir') { bc = 'bg-amber-100 text-amber-700'; bt = 'H-' + sc2.days; }
         else if (sc2.status === 'belum') { bc = 'bg-blue-100 text-blue-700'; bt = 'H-' + sc2.days; }
-        else { bc = 'bg-slate-100 text-slate-600'; bt = 'Tanpa Jatuh Tempo'; }
+        else { bc = 'bg-slate-100 text-slate-600'; bt = 'Tanpa JT'; }
       }
       var jt = getJatuhTempoTercepat(c.id);
       var jtStr = jt ? new Date(jt).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) : '-';
       rows += '<tr class="border-b border-slate-100 hover:bg-slate-50">' +
-        '<td class="px-6 py-4"><div class="font-bold text-sm">' + esc(c.nama) + '</div>' + (c.telepon ? '<div class="text-[11px] text-slate-500 mt-0.5">' + esc(c.telepon) + '</div>' : '') + '</td>' +
-        '<td class="px-6 py-4"><span class="px-2.5 py-1 ' + (u > 0 ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700') + ' text-[11px] font-bold rounded-full">' + (u > 0 ? rp(u) : 'Lunas') + '</span></td>' +
-        '<td class="px-6 py-4 text-sm">' + jtStr + '</td>' +
-        '<td class="px-6 py-4"><span class="px-2.5 py-1 ' + bc + ' text-[11px] font-bold rounded-full">' + bt + '</span></td>' +
-        '<td class="px-6 py-4 text-right whitespace-nowrap">' +
-          (u > 0 ? '<button onclick="vDetailHutang(\'' + c.id + '\')" class="px-3 py-1.5 bg-sky-600 text-white text-xs font-bold rounded-lg mr-1">Detail</button>' : '') +
-          (u > 0 ? '<button onclick="fBayarUtang(\'' + c.id + '\')" class="px-3 py-1.5 bg-emerald-600 text-white text-xs font-bold rounded-lg mr-1">Bayar</button>' : '') +
-          (u > 0 ? '<button onclick="prtInvoice(\'' + c.id + '\')" class="px-3 py-1.5 bg-brand-600 text-white text-xs font-bold rounded-lg mr-1">Invoice</button>' : '') +
-          '<button onclick="fCst(\'' + c.id + '\')" class="px-3 py-1.5 bg-white border text-xs font-bold rounded-lg mr-1">Edit</button>' +
-          '<button onclick="dCst(\'' + c.id + '\')" class="px-3 py-1.5 bg-red-50 text-red-600 text-xs font-bold rounded-lg">Hapus</button>' +
+        '<td class="px-3 lg:px-6 py-4"><div class="font-bold text-xs lg:text-sm">' + esc(c.nama) + '</div>' + (c.telepon ? '<div class="text-[10.5px] lg:text-[11px] text-slate-500 mt-0.5">' + esc(c.telepon) + '</div>' : '') + '</td>' +
+        '<td class="px-3 lg:px-6 py-4"><span class="px-2 lg:px-2.5 py-1 ' + (u > 0 ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700') + ' text-[10px] lg:text-[11px] font-bold rounded-full whitespace-nowrap">' + (u > 0 ? rp(u) : 'Lunas') + '</span></td>' +
+        '<td class="px-3 lg:px-6 py-4 text-xs lg:text-sm whitespace-nowrap">' + jtStr + '</td>' +
+        '<td class="px-3 lg:px-6 py-4"><span class="px-2 lg:px-2.5 py-1 ' + bc + ' text-[10px] lg:text-[11px] font-bold rounded-full whitespace-nowrap">' + bt + '</span></td>' +
+        '<td class="px-3 lg:px-6 py-4 text-right whitespace-nowrap">' +
+          (u > 0 ? '<button onclick="vDetailHutang(\'' + c.id + '\')" class="px-2 py-1.5 bg-sky-600 text-white text-[10px] lg:text-xs font-bold rounded-lg mr-1">Detail</button>' : '') +
+          (u > 0 ? '<button onclick="fBayarUtang(\'' + c.id + '\')" class="px-2 py-1.5 bg-emerald-600 text-white text-[10px] lg:text-xs font-bold rounded-lg mr-1">Bayar</button>' : '') +
+          (u > 0 ? '<button onclick="prtInvoice(\'' + c.id + '\')" class="px-2 py-1.5 bg-brand-600 text-white text-[10px] lg:text-xs font-bold rounded-lg mr-1">Invoice</button>' : '') +
+          '<button onclick="fCst(\'' + c.id + '\')" class="px-2 py-1.5 bg-white border text-[10px] lg:text-xs font-bold rounded-lg mr-1">Edit</button>' +
+          '<button onclick="dCst(\'' + c.id + '\')" class="px-2 py-1.5 bg-red-50 text-red-600 text-[10px] lg:text-xs font-bold rounded-lg">Hapus</button>' +
         '</td></tr>';
     }
   } else rows = '<tr><td colspan="5" class="px-6 py-16 text-center text-slate-400 text-sm">Belum ada pelanggan</td></tr>';
-  return '<div class="space-y-6">' +
-    '<div class="grid grid-cols-4 gap-5">' +
-      sc('Total Piutang', rp(totalPiutang), cAktif + ' pelanggan ngutang', 'r', 'Rp') +
+  return '<div class="space-y-4 lg:space-y-6">' +
+    '<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-5">' +
+      sc('Total Piutang', rp(totalPiutang), cAktif + ' pelanggan', 'r', 'Rp') +
       sc('Pelanggan Ngutang', cAktif, 'belum lunas', 'i', 'Pl') +
       sc('Hampir JT', cHampir, '≤ 7 hari', 'a', 'H-') +
       sc('Terlambat', cTelat, 'sudah lewat', 'r', 'X') +
     '</div>' +
     '<div class="bg-white border border-slate-200 rounded-2xl shadow-soft overflow-hidden">' +
-      '<div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between">' +
-        '<div><div class="font-extrabold text-base">Data Pelanggan & Piutang</div><div class="text-xs text-slate-500 mt-0.5">Barang yang belum dibayar</div></div>' +
-        '<button onclick="fCst()" class="px-4 py-2 bg-brand-600 text-white text-xs font-bold rounded-lg">+ Tambah Pelanggan</button>' +
+      '<div class="px-4 lg:px-6 py-4 lg:py-5 border-b border-slate-100 flex items-center justify-between flex-wrap gap-2">' +
+        '<div><div class="font-extrabold text-sm lg:text-base">Data Pelanggan & Piutang</div><div class="text-[11px] lg:text-xs text-slate-500 mt-0.5">Barang yang belum dibayar</div></div>' +
+        '<button onclick="fCst()" class="px-3 lg:px-4 py-2 bg-brand-600 text-white text-xs font-bold rounded-lg">+ Tambah</button>' +
       '</div>' +
-      '<table class="w-full"><thead class="bg-slate-50"><tr>' +
-        '<th class="text-left px-6 py-3.5 text-[11px] uppercase font-extrabold text-slate-500">Nama</th>' +
-        '<th class="text-left px-6 py-3.5 text-[11px] uppercase font-extrabold text-slate-500">Total Utang</th>' +
-        '<th class="text-left px-6 py-3.5 text-[11px] uppercase font-extrabold text-slate-500">Jatuh Tempo</th>' +
-        '<th class="text-left px-6 py-3.5 text-[11px] uppercase font-extrabold text-slate-500">Status</th>' +
-        '<th class="px-6 py-3.5"></th></tr></thead><tbody>' + rows + '</tbody></table>' +
+      '<div class="overflow-x-auto"><table class="w-full"><thead class="bg-slate-50"><tr>' +
+        '<th class="text-left px-3 lg:px-6 py-3.5 text-[10.5px] lg:text-[11px] uppercase font-extrabold text-slate-500">Nama</th>' +
+        '<th class="text-left px-3 lg:px-6 py-3.5 text-[10.5px] lg:text-[11px] uppercase font-extrabold text-slate-500">Total Utang</th>' +
+        '<th class="text-left px-3 lg:px-6 py-3.5 text-[10.5px] lg:text-[11px] uppercase font-extrabold text-slate-500">Jatuh Tempo</th>' +
+        '<th class="text-left px-3 lg:px-6 py-3.5 text-[10.5px] lg:text-[11px] uppercase font-extrabold text-slate-500">Status</th>' +
+        '<th class="px-3 lg:px-6 py-3.5"></th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
     '</div>' +
   '</div>';
 }
@@ -935,24 +947,24 @@ function vDetailHutang(custId) {
       var t = unpaid[j];
       var sisa = Number(t.total || 0) - Number(t.paid_amount || 0);
       var itemStr = (t.items || []).map(function (it) {
-        return '<div class="text-[12px] text-slate-600 ml-3">- ' + esc(it.nama) + ' x' + it.qty + ' = ' + rp(it.subtotal) + '</div>';
+        return '<div class="text-[11.5px] lg:text-[12px] text-slate-600 ml-3">- ' + esc(it.nama) + ' x' + it.qty + ' = ' + rp(it.subtotal) + '</div>';
       }).join('');
-      rows += '<div class="p-4 border border-slate-200 rounded-xl mb-3">' +
-        '<div class="flex justify-between items-start mb-2">' +
-          '<div><div class="font-mono text-xs font-bold text-slate-700">' + esc(t.invoice_no) + '</div>' +
-          '<div class="text-[11px] text-slate-500 mt-0.5">' + fDT(t.tanggal) + ' · ' + esc(t.metode || 'Hutang') + '</div></div>' +
-          '<div class="text-right"><div class="text-xs text-slate-500">Sisa</div><div class="font-black text-red-600">' + rp(sisa) + '</div></div>' +
+      rows += '<div class="p-3 lg:p-4 border border-slate-200 rounded-xl mb-3">' +
+        '<div class="flex justify-between items-start mb-2 gap-2">' +
+          '<div class="min-w-0"><div class="font-mono text-[11px] lg:text-xs font-bold text-slate-700">' + esc(t.invoice_no) + '</div>' +
+          '<div class="text-[10.5px] lg:text-[11px] text-slate-500 mt-0.5">' + fDT(t.tanggal) + ' · ' + esc(t.metode || 'Hutang') + '</div></div>' +
+          '<div class="text-right flex-shrink-0"><div class="text-[10.5px] lg:text-xs text-slate-500">Sisa</div><div class="font-black text-red-600 text-sm lg:text-base">' + rp(sisa) + '</div></div>' +
         '</div>' +
         '<div class="pt-2 border-t border-slate-100">' + itemStr + '</div>' +
       '</div>';
     }
   } else rows = '<div class="p-8 text-center text-slate-400 text-sm">Tidak ada hutang</div>';
 
-  var body = '<div class="p-6">' +
-    '<div class="p-4 bg-red-50 border border-red-200 rounded-xl mb-4">' +
-      '<div class="text-xs font-bold text-red-700 uppercase mb-1">Total Hutang</div>' +
-      '<div class="text-2xl font-black text-red-700">' + rp(totalUtang) + '</div>' +
-      '<div class="text-xs text-red-600 mt-1">' + unpaid.length + ' transaksi belum dibayar</div>' +
+  var body = '<div class="p-4 lg:p-6">' +
+    '<div class="p-3 lg:p-4 bg-red-50 border border-red-200 rounded-xl mb-4">' +
+      '<div class="text-[11px] lg:text-xs font-bold text-red-700 uppercase mb-1">Total Hutang</div>' +
+      '<div class="text-xl lg:text-2xl font-black text-red-700">' + rp(totalUtang) + '</div>' +
+      '<div class="text-[11px] lg:text-xs text-red-600 mt-1">' + unpaid.length + ' transaksi belum dibayar</div>' +
     '</div>' +
     rows +
   '</div>';
@@ -967,7 +979,7 @@ function fCst(id) {
   var lc = 'block text-xs font-bold text-slate-600 uppercase mb-2';
   var body = '<div class="p-6 space-y-4">' +
     '<div><label class="' + lc + '">Nama *</label><input id="cn" class="' + ic + '" value="' + esc(c ? c.nama : '') + '"></div>' +
-    '<div class="grid grid-cols-2 gap-3"><div><label class="' + lc + '">Telepon</label><input id="ct" class="' + ic + '" value="' + esc(c ? c.telepon : '') + '"></div>' +
+    '<div class="grid grid-cols-1 sm:grid-cols-2 gap-3"><div><label class="' + lc + '">Telepon</label><input id="ct" class="' + ic + '" value="' + esc(c ? c.telepon : '') + '"></div>' +
     '<div><label class="' + lc + '">Tipe</label><select id="ct2" class="' + ic + '"><option ' + (c && c.tipe === 'Umum' ? 'selected' : '') + '>Umum</option><option ' + (c && c.tipe === 'Grosir' ? 'selected' : '') + '>Grosir</option><option ' + (c && c.tipe === 'Toko' ? 'selected' : '') + '>Toko</option></select></div></div>' +
     '<div><label class="' + lc + '">Alamat</label><input id="ca" class="' + ic + '" value="' + esc(c ? c.alamat : '') + '"></div>' +
   '</div>';
@@ -1002,8 +1014,8 @@ function fBayarUtang(id) {
     '</div>' +
     '<div><label class="' + lc + '">Jumlah Bayar (Rp) *</label>' +
     '<input id="byr" type="text" inputmode="numeric" class="' + ic + '" value="' + fmtNum(u) + '" oninput="onNumInput(this)">' +
-    '<div class="flex gap-2 mt-2">' +
-      '<button type="button" onclick="document.getElementById(\'byr\').value=\'' + fmtNum(u) + '\'" class="px-3 py-1.5 bg-slate-100 text-xs font-bold rounded-lg">Lunas (' + rp(u) + ')</button>' +
+    '<div class="flex gap-2 mt-2 flex-wrap">' +
+      '<button type="button" onclick="document.getElementById(\'byr\').value=\'' + fmtNum(u) + '\'" class="px-3 py-1.5 bg-slate-100 text-xs font-bold rounded-lg">Lunas</button>' +
       '<button type="button" onclick="document.getElementById(\'byr\').value=\'' + fmtNum(Math.floor(u / 2)) + '\'" class="px-3 py-1.5 bg-slate-100 text-xs font-bold rounded-lg">Setengah</button>' +
       '<button type="button" onclick="document.getElementById(\'byr\').value=\'\'" class="px-3 py-1.5 bg-red-50 text-red-600 text-xs font-bold rounded-lg">Hapus</button>' +
     '</div></div>' +
@@ -1156,16 +1168,16 @@ function vCsh() {
   if (S.cash.length) {
     for (var j = 0; j < S.cash.length; j++) {
       var c = S.cash[j]; var isIn = c.tipe === 'masuk';
-      rows += '<tr class="border-b border-slate-100"><td class="px-6 py-3.5 text-xs text-slate-500">' + fDT(c.tanggal) + '</td>' +
-        '<td class="px-6 py-3.5"><span class="px-2.5 py-1 ' + (isIn ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700') + ' text-[11px] font-bold rounded-full">' + c.tipe + '</span></td>' +
-        '<td class="px-6 py-3.5 text-sm">' + esc(c.kategori || '-') + ' - ' + esc(c.keterangan || '') + '</td>' +
-        '<td class="px-6 py-3.5 text-right font-extrabold ' + (isIn ? 'text-emerald-600' : 'text-red-600') + '">' + (isIn ? '+' : '-') + rp(c.jumlah) + '</td></tr>';
+      rows += '<tr class="border-b border-slate-100"><td class="px-3 lg:px-6 py-3.5 text-[10.5px] lg:text-xs text-slate-500 whitespace-nowrap">' + fDT(c.tanggal) + '</td>' +
+        '<td class="px-3 lg:px-6 py-3.5"><span class="px-2 lg:px-2.5 py-1 ' + (isIn ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700') + ' text-[10px] lg:text-[11px] font-bold rounded-full">' + c.tipe + '</span></td>' +
+        '<td class="px-3 lg:px-6 py-3.5 text-xs lg:text-sm">' + esc(c.kategori || '-') + ' - ' + esc(c.keterangan || '') + '</td>' +
+        '<td class="px-3 lg:px-6 py-3.5 text-right font-extrabold ' + (isIn ? 'text-emerald-600' : 'text-red-600') + ' text-xs lg:text-sm whitespace-nowrap">' + (isIn ? '+' : '-') + rp(c.jumlah) + '</td></tr>';
     }
   } else rows = '<tr><td colspan="4" class="px-6 py-16 text-center text-slate-400 text-sm">Belum ada</td></tr>';
-  return '<div class="space-y-6">' +
-    '<div class="grid grid-cols-3 gap-5">' + sc('Kas Masuk', rp(ms), 'Pemasukan', 'g', 'In') + sc('Kas Keluar', rp(kl), 'Pengeluaran', 'r', 'Out') + sc('Saldo Kas', rp(ms - kl), 'Uang di laci', 'i', 'Sal') + '</div>' +
-    '<div class="bg-white border border-slate-200 rounded-2xl shadow-soft overflow-hidden"><div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between"><div class="font-extrabold text-base">Riwayat Arus Kas</div><button onclick="fCsh()" class="px-4 py-2 bg-brand-600 text-white text-xs font-bold rounded-lg">+ Catat</button></div>' +
-    '<table class="w-full"><thead class="bg-slate-50"><tr><th class="text-left px-6 py-3.5 text-[11px] uppercase font-extrabold text-slate-500">Tgl</th><th class="text-left px-6 py-3.5 text-[11px] uppercase font-extrabold text-slate-500">Tipe</th><th class="text-left px-6 py-3.5 text-[11px] uppercase font-extrabold text-slate-500">Keterangan</th><th class="text-right px-6 py-3.5 text-[11px] uppercase font-extrabold text-slate-500">Jumlah</th></tr></thead><tbody>' + rows + '</tbody></table></div></div>';
+  return '<div class="space-y-4 lg:space-y-6">' +
+    '<div class="grid grid-cols-1 sm:grid-cols-3 gap-3 lg:gap-5">' + sc('Kas Masuk', rp(ms), 'Pemasukan', 'g', 'In') + sc('Kas Keluar', rp(kl), 'Pengeluaran', 'r', 'Out') + sc('Saldo Kas', rp(ms - kl), 'Uang di laci', 'i', 'Sal') + '</div>' +
+    '<div class="bg-white border border-slate-200 rounded-2xl shadow-soft overflow-hidden"><div class="px-4 lg:px-6 py-4 lg:py-5 border-b border-slate-100 flex items-center justify-between"><div class="font-extrabold text-sm lg:text-base">Riwayat Arus Kas</div><button onclick="fCsh()" class="px-3 lg:px-4 py-2 bg-brand-600 text-white text-xs font-bold rounded-lg">+ Catat</button></div>' +
+    '<div class="overflow-x-auto"><table class="w-full"><thead class="bg-slate-50"><tr><th class="text-left px-3 lg:px-6 py-3.5 text-[10.5px] lg:text-[11px] uppercase font-extrabold text-slate-500">Tgl</th><th class="text-left px-3 lg:px-6 py-3.5 text-[10.5px] lg:text-[11px] uppercase font-extrabold text-slate-500">Tipe</th><th class="text-left px-3 lg:px-6 py-3.5 text-[10.5px] lg:text-[11px] uppercase font-extrabold text-slate-500">Keterangan</th><th class="text-right px-3 lg:px-6 py-3.5 text-[10.5px] lg:text-[11px] uppercase font-extrabold text-slate-500">Jumlah</th></tr></thead><tbody>' + rows + '</tbody></table></div></div></div>';
 }
 
 function fCsh() {
@@ -1202,21 +1214,21 @@ function vStg() {
   var co = S.store || {};
   var ic = 'w-full px-4 py-2.5 border-2 border-slate-200 rounded-xl text-sm focus:border-brand-500 outline-none';
   var lc = 'block text-xs font-bold text-slate-600 uppercase mb-2';
-  return '<div class="grid grid-cols-2 gap-6">' +
-    '<div class="bg-white border border-slate-200 rounded-2xl shadow-soft p-6"><div class="font-extrabold text-base mb-5">Profil Toko</div>' +
+  return '<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">' +
+    '<div class="bg-white border border-slate-200 rounded-2xl shadow-soft p-4 lg:p-6"><div class="font-extrabold text-sm lg:text-base mb-4 lg:mb-5">Profil Toko</div>' +
     '<div class="space-y-4"><div><label class="' + lc + '">Nama Toko</label><input id="cn2" class="' + ic + '" value="' + esc(co.nama || '') + '"></div>' +
     '<div><label class="' + lc + '">Alamat</label><input id="ca2" class="' + ic + '" value="' + esc(co.alamat || '') + '"></div>' +
-    '<div class="grid grid-cols-2 gap-3"><div><label class="' + lc + '">Telepon</label><input id="cp2" class="' + ic + '" value="' + esc(co.telepon || '') + '"></div>' +
+    '<div class="grid grid-cols-1 sm:grid-cols-2 gap-3"><div><label class="' + lc + '">Telepon</label><input id="cp2" class="' + ic + '" value="' + esc(co.telepon || '') + '"></div>' +
     '<div><label class="' + lc + '">Email</label><input id="ce2" class="' + ic + '" value="' + esc(co.email || '') + '"></div></div>' +
     '<button onclick="saveCo()" class="w-full py-3 bg-brand-600 text-white text-sm font-bold rounded-xl">Simpan</button></div></div>' +
-    '<div class="space-y-6"><div class="bg-white border border-slate-200 rounded-2xl shadow-soft p-6"><div class="font-extrabold text-base mb-3">ID Toko</div>' +
-    '<div class="p-4 bg-slate-100 rounded-xl font-mono text-xs font-bold break-all">' + esc(S.store.id) + '</div></div>' +
-    '<div class="bg-white border border-slate-200 rounded-2xl shadow-soft p-6"><div class="font-extrabold text-base mb-4">Statistik</div>' +
+    '<div class="space-y-4 lg:space-y-6"><div class="bg-white border border-slate-200 rounded-2xl shadow-soft p-4 lg:p-6"><div class="font-extrabold text-sm lg:text-base mb-3">ID Toko</div>' +
+    '<div class="p-3 lg:p-4 bg-slate-100 rounded-xl font-mono text-[11px] lg:text-xs font-bold break-all">' + esc(S.store.id) + '</div></div>' +
+    '<div class="bg-white border border-slate-200 rounded-2xl shadow-soft p-4 lg:p-6"><div class="font-extrabold text-sm lg:text-base mb-4">Statistik</div>' +
     '<div class="grid grid-cols-2 gap-3">' +
-      '<div class="p-3 bg-slate-50 rounded-xl"><div class="text-[10px] font-extrabold text-slate-500 uppercase">Produk</div><div class="text-xl font-black">' + S.products.length + '</div></div>' +
-      '<div class="p-3 bg-slate-50 rounded-xl"><div class="text-[10px] font-extrabold text-slate-500 uppercase">Transaksi</div><div class="text-xl font-black">' + S.trx.length + '</div></div>' +
-      '<div class="p-3 bg-slate-50 rounded-xl"><div class="text-[10px] font-extrabold text-slate-500 uppercase">Pelanggan</div><div class="text-xl font-black">' + S.customers.length + '</div></div>' +
-      '<div class="p-3 bg-slate-50 rounded-xl"><div class="text-[10px] font-extrabold text-slate-500 uppercase">Supplier</div><div class="text-xl font-black">' + S.suppliers.length + '</div></div>' +
+      '<div class="p-3 bg-slate-50 rounded-xl"><div class="text-[10px] font-extrabold text-slate-500 uppercase">Produk</div><div class="text-lg lg:text-xl font-black">' + S.products.length + '</div></div>' +
+      '<div class="p-3 bg-slate-50 rounded-xl"><div class="text-[10px] font-extrabold text-slate-500 uppercase">Transaksi</div><div class="text-lg lg:text-xl font-black">' + S.trx.length + '</div></div>' +
+      '<div class="p-3 bg-slate-50 rounded-xl"><div class="text-[10px] font-extrabold text-slate-500 uppercase">Pelanggan</div><div class="text-lg lg:text-xl font-black">' + S.customers.length + '</div></div>' +
+      '<div class="p-3 bg-slate-50 rounded-xl"><div class="text-[10px] font-extrabold text-slate-500 uppercase">Supplier</div><div class="text-lg lg:text-xl font-black">' + S.suppliers.length + '</div></div>' +
     '</div></div></div></div>';
 }
 
@@ -1226,4 +1238,26 @@ async function saveCo() {
   await loadData(S.user);
   $('sN').textContent = S.store.nama;
   tt('Tersimpan');
+}
+
+/* ================ QR SCANNER HP ================ */
+function fQRScanner() {
+  var url = location.origin + location.pathname.replace(/[^/]*$/, '') + 'scan.html';
+  var qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=' + encodeURIComponent(url);
+
+  var body = '<div class="p-6 text-center">' +
+    '<div class="text-sm text-slate-600 mb-4">Scan QR di bawah pakai <b>kamera HP</b>. HP akan jadi scanner — scan barcode apa saja, otomatis masuk ke keranjang ini.</div>' +
+    '<div class="inline-block p-4 bg-white border-2 border-slate-200 rounded-2xl mb-4">' +
+      '<img src="' + qrUrl + '" class="w-56 h-56 rounded-lg" alt="QR Code">' +
+    '</div>' +
+    '<div class="text-xs text-slate-500 break-all mb-2">' + url + '</div>' +
+    '<div class="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-xl text-left">' +
+      '<div class="text-xs font-bold text-amber-800 mb-1">Cara pakai:</div>' +
+      '<div class="text-xs text-amber-700 leading-relaxed">1. Scan QR ini pakai kamera HP<br>' +
+      '2. HP buka Scanner → login pakai akun toko yang sama<br>' +
+      '3. Scan barcode produk di HP → otomatis masuk ke keranjang desktop ini</div>' +
+    '</div>' +
+  '</div>';
+
+  md('📱 Scanner HP', body, function () { cm(); }, 'Tutup');
 }
