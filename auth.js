@@ -75,4 +75,5 @@ async function enterApp(u) {
   $('uE').textContent = u.email;
   buildNav();
   rndr();
+  if (window.startScanListener) window.startScanListener();
 }
