@@ -34,11 +34,8 @@ function buildNav() {
 function updN() {
   var els = document.querySelectorAll('.ni');
   for (var i = 0; i < els.length; i++) {
-    if (els[i].dataset.n === S.page) {
-      els[i].className = 'ni px-3.5 py-2.5 rounded-xl text-white text-sm font-bold cursor-pointer mb-1 bg-brand-600 shadow-lg shadow-brand-500/50 transition-all';
-    } else {
-      els[i].className = 'ni px-3.5 py-2.5 rounded-xl text-slate-400 text-sm font-semibold cursor-pointer mb-1 hover:bg-white/5 hover:text-slate-300 transition-all';
-    }
+    if (els[i].dataset.n === S.page) els[i].className = 'ni px-3.5 py-2.5 rounded-xl text-white text-sm font-bold cursor-pointer mb-1 bg-brand-600 shadow-lg shadow-brand-500/50 transition-all';
+    else els[i].className = 'ni px-3.5 py-2.5 rounded-xl text-slate-400 text-sm font-semibold cursor-pointer mb-1 hover:bg-white/5 hover:text-slate-300 transition-all';
   }
 }
 
@@ -68,7 +65,8 @@ function sc(l, v, s, c, ic) {
     i: ['bg-indigo-100', 'text-indigo-600'],
     b: ['bg-sky-100', 'text-sky-600'],
     r: ['bg-red-100', 'text-red-600'],
-    a: ['bg-amber-100', 'text-amber-600']
+    a: ['bg-amber-100', 'text-amber-600'],
+    p: ['bg-purple-100', 'text-purple-600']
   };
   var co = colors[c] || colors.i;
   return '<div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-soft">' +
@@ -124,17 +122,25 @@ function vDash() {
   var ts = active.reduce(function (a, b) { return a + Number(b.total || 0); }, 0);
   var sd = S.cash.reduce(function (a, b) { return a + (b.tipe === 'masuk' ? 1 : -1) * Number(b.jumlah || 0); }, 0);
 
-  var laba = 0;
+  var hpp = 0;
   for (var i = 0; i < active.length; i++) {
     var items = active[i].items || [];
     for (var j = 0; j < items.length; j++) {
       var it = items[j];
-      laba += (Number(it.harga) - Number(it.harga_beli || 0)) * Number(it.qty);
+      hpp += Number(it.harga_beli || 0) * Number(it.qty);
     }
   }
+  var labaKotor = ts - hpp;
+
+  var biayaOp = 0;
+  for (var k = 0; k < S.cash.length; k++) {
+    var c = S.cash[k];
+    if (c.tipe === 'keluar' && c.kategori !== 'Pembatalan') biayaOp += Number(c.jumlah || 0);
+  }
+  var labaBersih = labaKotor - biayaOp;
 
   var totalPiutang = 0;
-  for (var k = 0; k < S.customers.length; k++) totalPiutang += getUtang(S.customers[k].id);
+  for (var m = 0; m < S.customers.length; m++) totalPiutang += getUtang(S.customers[m].id);
 
   var telat = 0, hampir = 0;
   for (var x = 0; x < S.customers.length; x++) {
@@ -147,14 +153,12 @@ function vDash() {
   if (telat > 0 || hampir > 0) {
     alertHtml = '<div class="bg-amber-50 border-l-4 border-amber-500 rounded-2xl p-5 flex items-start gap-4 cursor-pointer hover:bg-amber-100 transition" onclick="go(\'pelanggan\')">' +
       '<div class="text-2xl">!</div>' +
-      '<div class="flex-1">' +
-        '<div class="font-extrabold text-amber-900 mb-1">Perhatian Piutang</div>' +
-        '<div class="text-sm text-amber-800">' +
-          (telat > 0 ? '<b>' + telat + '</b> pelanggan terlambat bayar. ' : '') +
-          (hampir > 0 ? '<b>' + hampir + '</b> pelanggan hampir jatuh tempo. ' : '') +
-          'Klik untuk lihat detail.' +
-        '</div>' +
-      '</div>' +
+      '<div class="flex-1"><div class="font-extrabold text-amber-900 mb-1">Perhatian Piutang</div>' +
+      '<div class="text-sm text-amber-800">' +
+        (telat > 0 ? '<b>' + telat + '</b> pelanggan terlambat bayar. ' : '') +
+        (hampir > 0 ? '<b>' + hampir + '</b> pelanggan hampir jatuh tempo. ' : '') +
+        'Klik untuk lihat.' +
+      '</div></div>' +
     '</div>';
   }
 
@@ -171,22 +175,26 @@ function vDash() {
   return '<div class="space-y-6">' +
     alertHtml +
     '<div class="bg-gradient-to-br from-slate-900 via-indigo-700 to-purple-700 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden">' +
-      '<div class="relative">' +
-        '<h1 class="text-3xl font-black tracking-tight">Halo, ' + esc((S.store && S.store.nama) || 'Admin') + '</h1>' +
-        '<p class="text-indigo-100 text-sm mt-2">Berikut ringkasan bisnis hari ini</p>' +
+      '<div class="relative flex items-center justify-between gap-6 flex-wrap">' +
+        '<div><h1 class="text-3xl font-black tracking-tight">Halo, ' + esc((S.store && S.store.nama) || 'Admin') + '</h1>' +
+        '<p class="text-indigo-100 text-sm mt-2">Berikut ringkasan bisnis hari ini</p></div>' +
+        '<div class="flex gap-2">' +
+          '<button onclick="fKasCepat(\'masuk\')" class="px-4 py-2.5 rounded-xl bg-white/15 border border-white/20 hover:bg-white/25 text-white text-xs font-bold">+ Kas Masuk</button>' +
+          '<button onclick="fKasCepat(\'keluar\')" class="px-4 py-2.5 rounded-xl bg-white text-slate-900 hover:bg-slate-100 text-xs font-bold">- Ambil Kas</button>' +
+        '</div>' +
       '</div>' +
     '</div>' +
     '<div class="grid grid-cols-4 gap-5">' +
       sc('Hari Ini', rp(st), todayTrx.length + ' transaksi', 'g', 'Rp') +
-      sc('Omzet', rp(ts), active.length + ' transaksi', 'i', 'Ch') +
-      sc('Laba Kotor', rp(laba), 'dari omzet', 'a', 'Lb') +
-      sc('Saldo Kas', rp(sd), 'kas bersih', sd >= 0 ? 'b' : 'r', 'Ks') +
+      sc('Omzet', rp(ts), 'kotor semua transaksi', 'i', 'Ch') +
+      sc('Laba Kotor', rp(labaKotor), 'Omzet - Modal', 'a', 'Lb') +
+      sc('Laba Bersih', rp(labaBersih), 'setelah operasional', 'p', 'Lb') +
     '</div>' +
     '<div class="grid grid-cols-4 gap-5">' +
+      sc('Saldo Kas', rp(sd), 'uang di laci toko', sd >= 0 ? 'b' : 'r', 'Ks') +
       sc('Total Piutang', rp(totalPiutang), 'belum dibayar', 'r', 'Ut') +
       sc('Produk', S.products.length, ls.length + ' stok tipis', 'i', 'Pr') +
       sc('Pelanggan', S.customers.length, 'terdaftar', 'g', 'Pl') +
-      sc('Transaksi', active.length, 'sukses', 'b', 'Tx') +
     '</div>' +
     '<div class="bg-white border border-slate-200 rounded-2xl shadow-soft overflow-hidden">' +
       '<div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between">' +
@@ -195,6 +203,37 @@ function vDash() {
       '</div>' + lsHtml +
     '</div>' +
   '</div>';
+}
+
+/* Kas cepat dari dashboard */
+function fKasCepat(tipe) {
+  S.cashType = tipe;
+  var ic = 'w-full px-4 py-2.5 border-2 border-slate-200 rounded-xl text-sm focus:border-brand-500 outline-none';
+  var lc = 'block text-xs font-bold text-slate-600 uppercase mb-2';
+  var body = '<div class="p-6 space-y-4">' +
+    '<div class="p-3 ' + (tipe === 'masuk' ? 'bg-emerald-50 text-emerald-800' : 'bg-red-50 text-red-800') + ' rounded-xl text-xs font-semibold">' +
+      (tipe === 'masuk' ? 'Mencatat uang masuk ke kas' : 'Mencatat pengambilan uang dari laci') +
+    '</div>' +
+    '<div><label class="' + lc + '">Jumlah (Rp) *</label><input id="kj" type="text" inputmode="numeric" placeholder="0" class="' + ic + '" oninput="onNumInput(this)"></div>' +
+    '<div><label class="' + lc + '">Kategori</label>' +
+      '<select id="kk" class="' + ic + '">' +
+        (tipe === 'masuk'
+          ? '<option>Modal Tambahan</option><option>Pendapatan Lain</option><option>Pengembalian</option><option>Lainnya</option>'
+          : '<option>Kulakan (beli stok)</option><option>Operasional</option><option>Gaji Karyawan</option><option>Listrik & Air</option><option>Prive (ambil pribadi)</option><option>Lainnya</option>') +
+      '</select></div>' +
+    '<div><label class="' + lc + '">Keterangan</label><input id="kk2" class="' + ic + '" placeholder="Contoh: Beli stok sembako"></div>' +
+  '</div>';
+  md(tipe === 'masuk' ? 'Kas Masuk' : 'Ambil Kas dari Laci', body, async function () {
+    var jml = readNum(vl('kj'));
+    if (!jml || jml <= 0) return tt('Jumlah tidak valid', 'err');
+    var cr = await sb.from('cashflow').insert({
+      store_id: S.store.id, tipe: tipe, kategori: vl('kk') || 'Umum',
+      jumlah: jml, keterangan: vl('kk2') || '-'
+    });
+    if (cr.error) return tt('Gagal: ' + cr.error.message, 'err');
+    cm(); await loadData(S.user); rndr();
+    tt(tipe === 'masuk' ? 'Kas masuk ' + rp(jml) : 'Diambil ' + rp(jml));
+  }, 'Simpan');
 }
 
 /* ================ AI ================ */
@@ -273,7 +312,7 @@ function vLap() {
         '<input type="date" id="lapFrom" class="px-3 py-2 border-2 border-slate-200 rounded-lg text-xs font-semibold focus:border-brand-500 outline-none">' +
         '<span class="text-slate-400 text-xs">s/d</span>' +
         '<input type="date" id="lapTo" class="px-3 py-2 border-2 border-slate-200 rounded-lg text-xs font-semibold focus:border-brand-500 outline-none">' +
-        '<button onclick="rLap()" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-lg">Terapkan</button>' +
+        '<button onclick="rLap()" class="px-4 py-2 bg-brand-600 text-white text-xs font-bold rounded-lg">Terapkan</button>' +
       '</div>' +
     '</div>' +
     '<div id="lapContent"></div>' +
@@ -438,8 +477,8 @@ function fPrd(id) {
       '<div><label class="' + lc + '">Kategori</label><input id="ft" class="' + ic + '" value="' + esc(p ? p.kategori : 'Umum') + '"></div></div>' +
     '<div><label class="' + lc + '">Nama Produk *</label><input id="fn" class="' + ic + '" value="' + esc(p ? p.nama : '') + '"></div>' +
     '<div class="grid grid-cols-2 gap-3">' +
-      '<div><label class="' + lc + '">Harga Beli</label><input id="fb" type="number" class="' + ic + '" value="' + (p ? p.harga_beli : 0) + '"></div>' +
-      '<div><label class="' + lc + '">Harga Jual</label><input id="fj" type="number" class="' + ic + '" value="' + (p ? p.harga_jual : 0) + '"></div></div>' +
+      '<div><label class="' + lc + '">Harga Beli</label><input id="fb" type="text" inputmode="numeric" class="' + ic + '" value="' + fmtNum(p ? p.harga_beli : 0) + '" oninput="onNumInput(this)"></div>' +
+      '<div><label class="' + lc + '">Harga Jual</label><input id="fj" type="text" inputmode="numeric" class="' + ic + '" value="' + fmtNum(p ? p.harga_jual : 0) + '" oninput="onNumInput(this)"></div></div>' +
     '<div class="grid grid-cols-2 gap-3">' +
       '<div><label class="' + lc + '">Stok</label><input id="fs" type="number" class="' + ic + '" value="' + (p ? p.stok : 0) + '"></div>' +
       '<div><label class="' + lc + '">Satuan</label><input id="fsat" class="' + ic + '" value="' + esc(p ? p.satuan : 'pcs') + '"></div></div>' +
@@ -452,7 +491,7 @@ function fPrd(id) {
       for (var i = 0; i < S.products.length; i++) if (S.products[i].nama.toLowerCase().trim() === namaBaru) { dup = S.products[i]; break; }
       if (dup) { cm(); setTimeout(function () { fPrd(dup.id); }, 150); tt('Produk sudah ada.', 'info'); return; }
     }
-    var d = { store_id: S.store.id, kode: vl('fk'), barcode: bc, nama: vl('fn'), kategori: vl('ft') || 'Umum', harga_beli: nu('fb'), harga_jual: nu('fj'), stok: nu('fs'), satuan: vl('fsat') || 'pcs' };
+    var d = { store_id: S.store.id, kode: vl('fk'), barcode: bc, nama: vl('fn'), kategori: vl('ft') || 'Umum', harga_beli: readNum(vl('fb')), harga_jual: readNum(vl('fj')), stok: nu('fs'), satuan: vl('fsat') || 'pcs' };
     var r = p ? await sb.from('products').update(d).eq('id', p.id) : await sb.from('products').insert(d);
     if (r.error) return tt(r.error.message, 'err');
     cm(); await loadData(S.user); rndr(); tt('Tersimpan');
@@ -471,7 +510,7 @@ function fAddStok(id) {
     '<div class="p-4 bg-slate-50 rounded-xl"><div class="text-xs font-bold text-slate-500 uppercase">Produk</div><div class="font-extrabold">' + esc(p.nama) + '</div>' +
     '<div class="mt-3 flex items-baseline gap-2"><div class="text-xs font-bold text-slate-500 uppercase">Stok</div><div class="text-xl font-black">' + p.stok + '</div></div></div>' +
     '<div><label class="block text-xs font-bold text-slate-600 uppercase mb-2">Jumlah Tambahan *</label>' +
-    '<input id="tambah" type="number" class="' + ic + '" value="10" min="1">' +
+    '<input id="tambah" type="number" class="' + ic + '" value="10" min="1" onfocus="this.select()">' +
     '<div class="flex gap-2 mt-2"><button type="button" onclick="document.getElementById(\'tambah\').value=10" class="px-3 py-1.5 bg-slate-100 text-xs font-bold rounded-lg">+10</button>' +
     '<button type="button" onclick="document.getElementById(\'tambah\').value=50" class="px-3 py-1.5 bg-slate-100 text-xs font-bold rounded-lg">+50</button>' +
     '<button type="button" onclick="document.getElementById(\'tambah\').value=100" class="px-3 py-1.5 bg-slate-100 text-xs font-bold rounded-lg">+100</button></div></div></div>';
@@ -582,10 +621,7 @@ function chQ(id, d) {
 
 function clr() { S.cart = []; S.diskon = 0; S.bayar = 0; S.metodeBayar = 'tunai'; rCart(); }
 
-function setMetode(m) {
-  S.metodeBayar = m;
-  rCart();
-}
+function setMetode(m) { S.metodeBayar = m; rCart(); }
 
 function rCart() {
   var el = $('cl'); if (!el) return;
@@ -615,11 +651,12 @@ function rCart() {
   var tot = Math.max(0, sub - dis);
   var byr = Number(S.bayar) || tot;
 
-  var custOpts = '<option value="">-- Pilih Pelanggan --</option>';
+  var custOpts = '<option value="">-- Umum / Walk-in --</option>';
   for (var c = 0; c < S.customers.length; c++) {
     var cc = S.customers[c];
+    if (cc.nama === 'Umum / Walk-in') continue;
     var ut = getUtang(cc.id);
-    custOpts += '<option value="' + cc.id + '" data-nama="' + esc(cc.nama) + '">' + esc(cc.nama) + (ut > 0 ? ' - Utang: ' + rp(ut) : '') + '</option>';
+    custOpts += '<option value="' + cc.id + '" data-nama="' + esc(cc.nama) + '">' + esc(cc.nama) + (ut > 0 ? ' (utang: ' + rp(ut) + ')' : '') + '</option>';
   }
 
   if (!S.cart.length) { sm.innerHTML = '<div class="text-center text-slate-400 text-xs">Total muncul di sini</div>'; return; }
@@ -630,19 +667,27 @@ function rCart() {
   var cH = mb === 'hutang' ? 'border-red-500 bg-red-50 text-red-700' : 'border-slate-200 bg-white text-slate-500';
 
   sm.innerHTML =
-    '<div class="mb-4"><label class="block text-[11px] font-bold text-slate-600 uppercase mb-1.5">Pelanggan</label>' +
-    '<select id="posCust" class="w-full px-3 py-2 border-2 border-slate-200 rounded-lg text-sm font-semibold focus:border-brand-500 outline-none">' + custOpts + '</select></div>' +
+    '<div class="mb-4">' +
+      '<label class="block text-[11px] font-bold text-slate-600 uppercase mb-1.5">Pelanggan <span class="text-red-500">(wajib jika Hutang)</span></label>' +
+      '<select id="posCust" class="w-full px-3 py-2 border-2 border-slate-200 rounded-lg text-sm font-semibold focus:border-brand-500 outline-none">' + custOpts + '</select>' +
+    '</div>' +
     '<div class="mb-4"><label class="block text-[11px] font-bold text-slate-600 uppercase mb-1.5">Metode Bayar</label>' +
-    '<div class="grid grid-cols-3 gap-2">' +
-      '<button type="button" onclick="setMetode(\'tunai\')" class="py-2 rounded-lg border-2 ' + cT + ' font-bold text-xs">Tunai</button>' +
-      '<button type="button" onclick="setMetode(\'qris\')" class="py-2 rounded-lg border-2 ' + cQ + ' font-bold text-xs">QRIS</button>' +
-      '<button type="button" onclick="setMetode(\'hutang\')" class="py-2 rounded-lg border-2 ' + cH + ' font-bold text-xs">Hutang</button>' +
-    '</div></div>' +
+      '<div class="grid grid-cols-3 gap-2">' +
+        '<button type="button" onclick="setMetode(\'tunai\')" class="py-2 rounded-lg border-2 ' + cT + ' font-bold text-xs">Tunai</button>' +
+        '<button type="button" onclick="setMetode(\'qris\')" class="py-2 rounded-lg border-2 ' + cQ + ' font-bold text-xs">QRIS</button>' +
+        '<button type="button" onclick="setMetode(\'hutang\')" class="py-2 rounded-lg border-2 ' + cH + ' font-bold text-xs">Hutang</button>' +
+      '</div>' +
+    '</div>' +
     '<div class="space-y-2 mb-4">' +
       '<div class="flex justify-between text-sm"><span class="text-slate-500">Subtotal</span><b>' + rp(sub) + '</b></div>' +
-      '<div class="flex justify-between items-center text-sm"><span class="text-slate-500">Diskon</span><input type="number" value="' + dis + '" oninput="S.diskon=this.value;rCart()" class="w-24 px-2 py-1 text-right border border-slate-200 rounded-md text-xs font-semibold focus:border-brand-500 outline-none"></div>' +
-      (mb !== 'hutang' ? '<div class="flex justify-between items-center text-sm"><span class="text-slate-500">Bayar</span><input type="number" value="' + byr + '" oninput="S.bayar=this.value;rCart()" class="w-28 px-2 py-1 text-right border border-slate-200 rounded-md text-xs font-semibold focus:border-brand-500 outline-none"></div>' : '') +
+      '<div class="flex justify-between items-center text-sm"><span class="text-slate-500">Diskon</span>' +
+        '<div class="flex gap-1 items-center"><input id="inpDiskon" type="text" inputmode="numeric" value="' + fmtNum(dis) + '" placeholder="0" oninput="onNumInput(this,\'diskon\')" class="w-24 px-2 py-1 text-right border border-slate-200 rounded-md text-xs font-semibold focus:border-brand-500 outline-none"><button type="button" onclick="S.diskon=0;document.getElementById(\'inpDiskon\').value=\'\';rCart()" class="w-6 h-6 rounded bg-red-50 text-red-600 text-[10px] font-bold">X</button></div>' +
+      '</div>' +
+      (mb !== 'hutang' ? '<div class="flex justify-between items-center text-sm"><span class="text-slate-500">Bayar</span>' +
+        '<div class="flex gap-1 items-center"><input id="inpBayar" type="text" inputmode="numeric" value="' + fmtNum(byr) + '" placeholder="0" oninput="onNumInput(this,\'bayar\')" class="w-32 px-2 py-1 text-right border border-slate-200 rounded-md text-xs font-semibold focus:border-brand-500 outline-none"><button type="button" onclick="S.bayar=0;document.getElementById(\'inpBayar\').value=\'\';rCart()" class="w-6 h-6 rounded bg-red-50 text-red-600 text-[10px] font-bold">X</button></div>' +
+      '</div>' : '') +
       '<div class="flex justify-between items-center pt-3 border-t-2 border-dashed border-slate-200"><span class="font-extrabold">TOTAL</span><span class="text-xl font-black ' + (mb === 'hutang' ? 'text-red-600' : 'text-brand-600') + '">' + rp(tot) + '</span></div>' +
+      (mb !== 'hutang' && (Number(S.bayar) || 0) > 0 ? '<div class="flex justify-between text-xs"><span class="text-slate-500">Kembali</span><b class="text-emerald-600" id="dispKembali">' + rp(Math.max(0, (Number(S.bayar) || 0) - tot)) + '</b></div>' : '') +
     '</div>' +
     (mb === 'hutang'
       ? '<button onclick="co()" class="w-full py-3.5 bg-red-600 hover:bg-red-700 text-white text-sm font-bold rounded-xl shadow-lg">Simpan sebagai Hutang</button>'
@@ -650,6 +695,18 @@ function rCart() {
         ? '<button onclick="co()" class="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl shadow-lg">Proses QRIS & Cetak</button>'
         : '<button onclick="co()" class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl shadow-lg">Proses & Cetak Struk</button>') +
     '<button onclick="clr()" class="w-full mt-2 py-2.5 bg-white border border-slate-200 text-slate-600 text-xs font-bold rounded-xl">Kosongkan</button>';
+}
+
+function updateCartTotals() {
+  if (S.page !== 'kasir') return;
+  var dEl = $('dispKembali');
+  if (!dEl) return;
+  var sub = 0;
+  for (var k = 0; k < S.cart.length; k++) sub += S.cart[k].harga * S.cart[k].qty;
+  var dis = Number(S.diskon) || 0;
+  var tot = Math.max(0, sub - dis);
+  var byr = Number(S.bayar) || tot;
+  dEl.textContent = rp(Math.max(0, byr - tot));
 }
 
 function ms() {
@@ -820,12 +877,12 @@ function vCst() {
       var c = sorted[j];
       var u = getUtang(c.id);
       var sc2 = utangScore(c.id);
-      var bc = 'bg-slate-100 text-slate-600', bt = 'Lunas';
+      var bc = 'bg-slate-100 text-slate-600', bt = 'Tidak Ngutang';
       if (u > 0) {
-        if (sc2.status === 'telat') { bc = 'bg-red-100 text-red-700'; bt = 'Telat ' + sc2.days + ' hr'; }
-        else if (sc2.status === 'hampir') { bc = 'bg-amber-100 text-amber-700'; bt = 'H-' + sc2.days; }
+        if (sc2.status === 'telat') { bc = 'bg-red-100 text-red-700'; bt = 'Terlambat ' + sc2.days + ' hr'; }
+        else if (sc2.status === 'hampir') { bc = 'bg-amber-100 text-amber-700'; bt = 'Jatuh Tempo H-' + sc2.days; }
         else if (sc2.status === 'belum') { bc = 'bg-blue-100 text-blue-700'; bt = 'H-' + sc2.days; }
-        else { bc = 'bg-slate-100 text-slate-600'; bt = 'Tanpa JT'; }
+        else { bc = 'bg-slate-100 text-slate-600'; bt = 'Tanpa Jatuh Tempo'; }
       }
       var jt = getJatuhTempoTercepat(c.id);
       var jtStr = jt ? new Date(jt).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) : '-';
@@ -845,9 +902,9 @@ function vCst() {
   } else rows = '<tr><td colspan="5" class="px-6 py-16 text-center text-slate-400 text-sm">Belum ada pelanggan</td></tr>';
   return '<div class="space-y-6">' +
     '<div class="grid grid-cols-4 gap-5">' +
-      sc('Total Piutang', rp(totalPiutang), cAktif + ' pelanggan', 'r', 'Rp') +
-      sc('Pelanggan Aktif', cAktif, 'dengan hutang', 'i', 'Pl') +
-      sc('Hampir JT', cHampir, '<= 7 hari', 'a', 'H-') +
+      sc('Total Piutang', rp(totalPiutang), cAktif + ' pelanggan ngutang', 'r', 'Rp') +
+      sc('Pelanggan Ngutang', cAktif, 'belum lunas', 'i', 'Pl') +
+      sc('Hampir JT', cHampir, '≤ 7 hari', 'a', 'H-') +
       sc('Terlambat', cTelat, 'sudah lewat', 'r', 'X') +
     '</div>' +
     '<div class="bg-white border border-slate-200 rounded-2xl shadow-soft overflow-hidden">' +
@@ -944,16 +1001,17 @@ function fBayarUtang(id) {
       '<div class="text-xs text-slate-500 mt-1">' + unpaid.length + ' transaksi akan dibayar (FIFO - yang lama dulu)</div>' +
     '</div>' +
     '<div><label class="' + lc + '">Jumlah Bayar (Rp) *</label>' +
-    '<input id="byr" type="number" class="' + ic + '" value="' + u + '" max="' + u + '">' +
+    '<input id="byr" type="text" inputmode="numeric" class="' + ic + '" value="' + fmtNum(u) + '" oninput="onNumInput(this)">' +
     '<div class="flex gap-2 mt-2">' +
-      '<button type="button" onclick="document.getElementById(\'byr\').value=' + u + '" class="px-3 py-1.5 bg-slate-100 text-xs font-bold rounded-lg">Lunas (' + rp(u) + ')</button>' +
-      '<button type="button" onclick="document.getElementById(\'byr\').value=' + Math.floor(u / 2) + '" class="px-3 py-1.5 bg-slate-100 text-xs font-bold rounded-lg">Setengah</button>' +
+      '<button type="button" onclick="document.getElementById(\'byr\').value=\'' + fmtNum(u) + '\'" class="px-3 py-1.5 bg-slate-100 text-xs font-bold rounded-lg">Lunas (' + rp(u) + ')</button>' +
+      '<button type="button" onclick="document.getElementById(\'byr\').value=\'' + fmtNum(Math.floor(u / 2)) + '\'" class="px-3 py-1.5 bg-slate-100 text-xs font-bold rounded-lg">Setengah</button>' +
+      '<button type="button" onclick="document.getElementById(\'byr\').value=\'\'" class="px-3 py-1.5 bg-red-50 text-red-600 text-xs font-bold rounded-lg">Hapus</button>' +
     '</div></div>' +
     '<div><label class="' + lc + '">Keterangan</label><input id="ket" class="' + ic + '"></div>' +
   '</div>';
 
   md('Bayar Utang: ' + c.nama, body, async function () {
-    var byr = nu('byr');
+    var byr = readNum(vl('byr'));
     if (!byr || byr <= 0) return tt('Jumlah tidak valid', 'err');
     if (byr > u) return tt('Melebihi utang', 'err');
 
@@ -1010,7 +1068,6 @@ function prtInvoice(id) {
     doc.setFontSize(10);
     doc.setFont(undefined, 'normal');
     doc.text((co.alamat || '') + (co.telepon ? ' | ' + co.telepon : ''), 20, 26);
-    if (co.email) doc.text('Email: ' + co.email, 20, 32);
 
     doc.setTextColor(15, 23, 42);
     doc.setFontSize(20);
@@ -1078,11 +1135,6 @@ function prtInvoice(id) {
     doc.setFontSize(12);
     doc.text(jtStr, 20, fy + 17);
 
-    var ny = fy + 32;
-    doc.setTextColor(100, 116, 139);
-    doc.setFontSize(9);
-    doc.text('Mohon lakukan pembayaran sebelum tanggal jatuh tempo.', 20, ny);
-
     var ph = doc.internal.pageSize.height;
     doc.setDrawColor(226, 232, 240);
     doc.line(20, ph - 20, 190, ph - 20);
@@ -1106,12 +1158,12 @@ function vCsh() {
       var c = S.cash[j]; var isIn = c.tipe === 'masuk';
       rows += '<tr class="border-b border-slate-100"><td class="px-6 py-3.5 text-xs text-slate-500">' + fDT(c.tanggal) + '</td>' +
         '<td class="px-6 py-3.5"><span class="px-2.5 py-1 ' + (isIn ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700') + ' text-[11px] font-bold rounded-full">' + c.tipe + '</span></td>' +
-        '<td class="px-6 py-3.5 text-sm">' + esc(c.keterangan || '-') + '</td>' +
+        '<td class="px-6 py-3.5 text-sm">' + esc(c.kategori || '-') + ' - ' + esc(c.keterangan || '') + '</td>' +
         '<td class="px-6 py-3.5 text-right font-extrabold ' + (isIn ? 'text-emerald-600' : 'text-red-600') + '">' + (isIn ? '+' : '-') + rp(c.jumlah) + '</td></tr>';
     }
   } else rows = '<tr><td colspan="4" class="px-6 py-16 text-center text-slate-400 text-sm">Belum ada</td></tr>';
   return '<div class="space-y-6">' +
-    '<div class="grid grid-cols-3 gap-5">' + sc('Kas Masuk', rp(ms), 'Pemasukan', 'g', 'In') + sc('Kas Keluar', rp(kl), 'Pengeluaran', 'r', 'Out') + sc('Saldo', rp(ms - kl), 'Bersih', 'i', 'Sal') + '</div>' +
+    '<div class="grid grid-cols-3 gap-5">' + sc('Kas Masuk', rp(ms), 'Pemasukan', 'g', 'In') + sc('Kas Keluar', rp(kl), 'Pengeluaran', 'r', 'Out') + sc('Saldo Kas', rp(ms - kl), 'Uang di laci', 'i', 'Sal') + '</div>' +
     '<div class="bg-white border border-slate-200 rounded-2xl shadow-soft overflow-hidden"><div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between"><div class="font-extrabold text-base">Riwayat Arus Kas</div><button onclick="fCsh()" class="px-4 py-2 bg-brand-600 text-white text-xs font-bold rounded-lg">+ Catat</button></div>' +
     '<table class="w-full"><thead class="bg-slate-50"><tr><th class="text-left px-6 py-3.5 text-[11px] uppercase font-extrabold text-slate-500">Tgl</th><th class="text-left px-6 py-3.5 text-[11px] uppercase font-extrabold text-slate-500">Tipe</th><th class="text-left px-6 py-3.5 text-[11px] uppercase font-extrabold text-slate-500">Keterangan</th><th class="text-right px-6 py-3.5 text-[11px] uppercase font-extrabold text-slate-500">Jumlah</th></tr></thead><tbody>' + rows + '</tbody></table></div></div>';
 }
@@ -1123,13 +1175,14 @@ function fCsh() {
   var body = '<div class="p-6 space-y-4"><div><label class="' + lc + '">Tipe</label>' +
     '<div class="grid grid-cols-2 gap-3"><button type="button" onclick="pcft(\'masuk\')" data-ct="masuk" class="cft py-3 rounded-xl border-2 border-emerald-500 bg-emerald-50 text-emerald-700 font-extrabold text-sm">Masuk</button>' +
     '<button type="button" onclick="pcft(\'keluar\')" data-ct="keluar" class="cft py-3 rounded-xl border-2 border-slate-200 bg-white text-slate-500 font-extrabold text-sm">Keluar</button></div></div>' +
-    '<div><label class="' + lc + '">Kategori</label><input id="ck" class="' + ic + '"></div>' +
-    '<div><label class="' + lc + '">Jumlah *</label><input id="cj" type="number" class="' + ic + '" value="0"></div>' +
+    '<div><label class="' + lc + '">Kategori</label><input id="ck" class="' + ic + '" placeholder="Operasional / Kulakan / Prive"></div>' +
+    '<div><label class="' + lc + '">Jumlah *</label><input id="cj" type="text" inputmode="numeric" class="' + ic + '" placeholder="0" oninput="onNumInput(this)"></div>' +
     '<div><label class="' + lc + '">Keterangan</label><input id="ct" class="' + ic + '"></div></div>';
   md('Catat Arus Kas', body, async function () {
-    if (!nu('cj')) return tt('Jumlah wajib', 'err');
+    var jml = readNum(vl('cj'));
+    if (!jml) return tt('Jumlah wajib', 'err');
     var tp = S.cashType || 'masuk';
-    var cr = await sb.from('cashflow').insert({ store_id: S.store.id, tipe: tp, kategori: vl('ck') || 'Umum', jumlah: nu('cj'), keterangan: vl('ct') || '-' });
+    var cr = await sb.from('cashflow').insert({ store_id: S.store.id, tipe: tp, kategori: vl('ck') || 'Umum', jumlah: jml, keterangan: vl('ct') || '-' });
     if (cr.error) return tt('Gagal', 'err');
     cm(); await loadData(S.user); rndr(); tt('Tercatat');
   });
