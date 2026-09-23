@@ -2,6 +2,7 @@
 var SUPABASE_URL = 'https://rgfjpekyejrtqxcryhnn.supabase.co';
 var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJnZmpwZWt5ZWpydHF4Y3J5aG5uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk5NzY4NDYsImV4cCI6MjEwNTU1Mjg0Nn0.wo1NK9d7cyCsJancNiDwVvKXYFo4YjzN8mrLmBiOZnE';
 
+/* ═══════════════════════════════════════════════════════════ */
 
 var sb = null;
 var LAP = { period: 'today', from: '', to: '' };
@@ -25,16 +26,13 @@ function pad2(n) { return n < 10 ? '0' + n : '' + n; }
 function todayLocal() { var d = new Date(); return d.getFullYear() + '-' + pad2(d.getMonth()+1) + '-' + pad2(d.getDate()); }
 function localDateStr(d) { return d.getFullYear() + '-' + pad2(d.getMonth()+1) + '-' + pad2(d.getDate()); }
 
-/* Format angka ribuan: 2500000 -> "2.500.000" */
 function fmtNum(n) {
   if (n == null || n === '') return '';
   return String(n).replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 }
-/* Baca format ribuan: "2.500.000" -> 2500000 */
 function readNum(s) {
   return Number(String(s || '').replace(/\D/g, '')) || 0;
 }
-/* Input handler untuk text input berformat */
 function onNumInput(el, stateKey) {
   var raw = readNum(el.value);
   var formatted = fmtNum(raw);
@@ -43,7 +41,6 @@ function onNumInput(el, stateKey) {
     try { el.setSelectionRange(formatted.length, formatted.length); } catch(e) {}
   }
   if (stateKey) S[stateKey] = raw;
-  // Update total di cart jika ada
   if (typeof updateCartTotals === 'function') updateCartTotals();
 }
 
