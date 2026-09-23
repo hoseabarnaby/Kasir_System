@@ -91,6 +91,7 @@ function sc(l, v, s, c, ic) {
   '</div>';
 }
 
+/* ============ PIUTANG HELPERS ============ */
 function getUnpaidTrx(customerId) {
   return S.trx.filter(function (t) {
     return t.customer_id === customerId && t.status !== 'cancelled' && t.payment_status !== 'paid';
@@ -453,7 +454,7 @@ function rPrd() {
   var el = $('pl'); if (!el) return;
   if (!list.length) {
     el.className = '';
-    el.innerHTML = '<div class="bg-white border border-slate-200 rounded-2xl p-16 text-center"><div class="text-slate-500 text-sm mb-5">Belum ada produk</div><button onclick="fPrd()" class="px-5 py-2.5 bg-brand-600 text-white text-sm font-bold rounded-xl">+ Tambah Produk</button></div>';
+    el.innerHTML = '<div class="bg-white border border-slate-200 rounded-2xl p-16 text-center col-span-full"><div class="text-slate-500 text-sm mb-5">Belum ada produk</div><button onclick="fPrd()" class="px-5 py-2.5 bg-brand-600 text-white text-sm font-bold rounded-xl">+ Tambah Produk</button></div>';
     return;
   }
   el.className = 'grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-5';
@@ -549,7 +550,11 @@ function vKasir() {
       '<div class="bg-gradient-to-br from-brand-50 to-indigo-50 border-2 border-brand-500 rounded-2xl p-4 lg:p-5">' +
         '<div class="flex items-center justify-between mb-3 gap-2 flex-wrap">' +
           '<span class="text-sm font-extrabold text-indigo-900">Scan Barcode</span>' +
-          '<button onclick="fQRScanner()" class="px-2.5 lg:px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[10.5px] lg:text-[11px] font-bold rounded-lg">📱 Scanner HP</button>' +
+          '<div class="flex items-center gap-2 flex-wrap">' +
+            '<span id="ss" class="px-3 py-1 bg-emerald-100 text-emerald-700 text-[11px] font-bold rounded-full">SIAP</span>' +
+            '<span id="scanStatus" class="px-3 py-1 bg-slate-100 text-slate-600 text-[11px] font-bold rounded-full">📱 ...</span>' +
+            '<button onclick="fQRScanner()" class="px-2.5 lg:px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[10.5px] lg:text-[11px] font-bold rounded-lg">📱 Scanner HP</button>' +
+          '</div>' +
         '</div>' +
         '<input id="si" onkeypress="hs(event)" placeholder="Scan / ketik barcode, Enter" class="w-full px-4 py-3 bg-white border-2 border-brand-500 rounded-xl text-sm font-mono font-bold focus:ring-4 focus:ring-brand-500/20 outline-none">' +
         '<div class="grid grid-cols-2 gap-2 mt-3"><button onclick="ms()" class="py-2 bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-lg">Input Manual</button>' +
