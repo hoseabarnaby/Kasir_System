@@ -29,7 +29,7 @@ body { font-family: 'Inter', system-ui, sans-serif; background: #0f172a; margin:
 <body class="text-white overflow-hidden">
 
 <!-- LOGIN SCREEN -->
-<div id="loginScreen" class="fixed inset-0 bg-slate-900 flex items-center justify-center p-6 z-50">
+<div id="loginScreen" class="fixed inset-0 bg-slate-900 flex items-center justify-center p-4 z-50">
   <div class="bg-white rounded-2xl p-6 w-full max-w-sm text-slate-900">
     <div class="text-center mb-6">
       <div class="w-14 h-14 bg-gradient-to-br from-brand-500 to-purple-500 rounded-2xl mx-auto flex items-center justify-center text-white font-black text-xl mb-3">KP</div>
@@ -47,27 +47,26 @@ body { font-family: 'Inter', system-ui, sans-serif; background: #0f172a; margin:
         <input id="sPass" type="password" placeholder="Password" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm focus:border-brand-500 outline-none">
       </div>
       <button id="btnLogin" class="w-full py-3.5 bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm rounded-xl">Login</button>
-      <p class="text-center text-xs text-slate-500 mt-2">Belum punya akun? <a href="index.html" class="text-brand-600 font-bold">Daftar di sini</a></p>
     </div>
   </div>
 </div>
 
 <!-- SCANNER SCREEN -->
-<div id="scanScreen" class="fixed inset-0 hidden flex flex-col">
+<div id="scanScreen" class="fixed inset-0 hidden flex-col">
 
   <!-- Header -->
-  <div class="bg-slate-900/95 backdrop-blur border-b border-white/10 px-4 py-3 flex items-center gap-3 z-20">
-    <div class="w-9 h-9 bg-gradient-to-br from-brand-500 to-purple-500 rounded-xl flex items-center justify-center text-white font-black text-xs">KP</div>
+  <div class="bg-slate-900/95 backdrop-blur border-b border-white/10 px-4 py-3 flex items-center gap-3 z-20 flex-shrink-0">
+    <div class="w-9 h-9 bg-gradient-to-br from-brand-500 to-purple-500 rounded-xl flex items-center justify-center text-white font-black text-xs flex-shrink-0">KP</div>
     <div class="flex-1 min-w-0">
       <div id="storeName" class="text-white text-sm font-bold truncate">Toko</div>
       <div id="storeId" class="text-slate-400 text-[10px] font-mono truncate">-</div>
     </div>
-    <div id="connStatus" class="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 text-[10px] font-bold">● Terhubung</div>
+    <div id="connStatus" class="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 text-[10px] font-bold whitespace-nowrap">● Live</div>
     <button onclick="doLogout()" class="px-3 py-1.5 rounded-lg bg-red-500/20 text-red-300 text-[11px] font-bold">Keluar</button>
   </div>
 
   <!-- Camera Area -->
-  <div id="cameraWrap" class="flex-1 relative bg-black overflow-hidden">
+  <div id="cameraWrap" class="flex-1 relative bg-black overflow-hidden min-h-0">
     <div id="reader"></div>
 
     <!-- Overlay Frame -->
@@ -88,10 +87,10 @@ body { font-family: 'Inter', system-ui, sans-serif; background: #0f172a; margin:
     <!-- Success Card -->
     <div id="successCard" class="absolute top-4 left-4 right-4 bg-emerald-600 rounded-2xl p-4 shadow-2xl transform -translate-y-40 transition-all duration-300 z-30">
       <div class="flex items-center gap-3">
-        <div class="text-3xl">✅</div>
+        <div class="text-3xl flex-shrink-0">✅</div>
         <div class="flex-1 min-w-0">
-          <div class="text-white text-sm font-black" id="successName">Produk</div>
-          <div class="text-emerald-100 text-xs" id="successPrice">Rp 0</div>
+          <div class="text-white text-sm font-black truncate" id="successName">Produk</div>
+          <div class="text-emerald-100 text-xs truncate" id="successPrice">Rp 0</div>
         </div>
       </div>
     </div>
@@ -99,40 +98,44 @@ body { font-family: 'Inter', system-ui, sans-serif; background: #0f172a; margin:
     <!-- Error Card -->
     <div id="errorCard" class="absolute top-4 left-4 right-4 bg-red-600 rounded-2xl p-4 shadow-2xl transform -translate-y-40 transition-all duration-300 z-30">
       <div class="flex items-center gap-3">
-        <div class="text-3xl">⚠️</div>
+        <div class="text-3xl flex-shrink-0">⚠️</div>
         <div class="flex-1 min-w-0">
           <div class="text-white text-sm font-black">Tidak ditemukan</div>
-          <div class="text-red-100 text-xs" id="errorCode">-</div>
+          <div class="text-red-100 text-xs truncate" id="errorCode">-</div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Bottom Bar: Riwayat Scan -->
-  <div class="bg-slate-900/95 backdrop-blur border-t border-white/10 z-20" style="max-height: 30vh;">
+  <!-- Bottom Bar -->
+  <div class="bg-slate-900/95 backdrop-blur border-t border-white/10 z-20 flex-shrink-0" style="max-height: 25vh;">
     <div class="px-4 py-2 flex items-center justify-between border-b border-white/5">
       <div class="text-[11px] font-bold text-slate-400 uppercase">Scan Terakhir</div>
       <div class="text-[11px] text-slate-500" id="scanCount">0 scan</div>
     </div>
-    <div id="history" class="overflow-y-auto" style="max-height: 25vh;">
+    <div id="history" class="overflow-y-auto" style="max-height: 20vh;">
       <div class="p-6 text-center text-slate-500 text-xs">Belum ada scan</div>
     </div>
   </div>
 </div>
 
+<!-- Load config.js dulu supaya dapat SUPABASE_URL -->
+<script src="config.js"></script>
 <script>
-var sb = null;
 var scanCount = 0;
 var history = [];
 var lastCode = '';
 var lastTime = 0;
 var html5QrCode = null;
 
-/* Ganti 2 baris ini dengan punyamu */
-var SUPABASE_URL = 'https://xxxxx.supabase.co';
-var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
-
 function $(id) { return document.getElementById(id); }
+
+function showMsg(m, ok) {
+  var e = $('loginMsg');
+  e.classList.remove('hidden');
+  e.className = 'mb-4 p-3 rounded-xl text-sm font-semibold ' + (ok ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700');
+  e.textContent = m;
+}
 
 function toast(m, ok) {
   var c = ok ? 'bg-emerald-600' : 'bg-red-600';
@@ -140,10 +143,9 @@ function toast(m, ok) {
   el.className = 'fixed bottom-4 left-4 right-4 ' + c + ' text-white text-sm font-bold py-3 px-4 rounded-xl shadow-2xl z-50 text-center';
   el.textContent = m;
   document.body.appendChild(el);
-  setTimeout(function () { el.remove(); }, 2000);
+  setTimeout(function () { el.remove(); }, 2500);
 }
 
-/* Suara beep */
 function beep(ok) {
   try {
     var ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -166,43 +168,61 @@ function beep(ok) {
   } catch (e) {}
 }
 
-/* Getar HP */
 function vibrate(ok) {
   if (!navigator.vibrate) return;
   try { navigator.vibrate(ok ? [50, 30, 50] : [200]); } catch (e) {}
 }
 
-/* Login */
-$('btnLogin').onclick = doLogin;
-$('sPass').addEventListener('keypress', function (e) { if (e.key === 'Enter') doLogin(); });
+/* Cek config.js */
+if (typeof SUPABASE_URL === 'undefined' || SUPABASE_URL.indexOf('xxxxx') >= 0) {
+  document.addEventListener('DOMContentLoaded', function() {
+    showMsg('⚠️ config.js belum diisi atau SUPABASE_URL belum diganti. Buka file config.js di VS Code, ganti 2 baris SUPABASE_URL & SUPABASE_ANON_KEY dengan punyamu.', false);
+    var b = $('btnLogin');
+    if (b) b.disabled = true;
+  });
+} else {
+  /* Init Supabase setelah config.js dibaca */
+  window.sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: { persistSession: true, autoRefreshToken: true }
+  });
+}
 
+/* Login */
 function doLogin() {
+  if (!window.sb) return showMsg('Supabase belum siap. Cek console.', false);
   var email = $('sEmail').value.trim();
   var pass = $('sPass').value;
-  if (!email || !pass) return toast('Isi email & password', false);
+  if (!email || !pass) return showMsg('Isi email & password', false);
   $('btnLogin').textContent = 'Memuat...';
   $('btnLogin').disabled = true;
-  sb.auth.signInWithPassword({ email: email, password: pass }).then(function (r) {
+  window.sb.auth.signInWithPassword({ email: email, password: pass }).then(function (r) {
     $('btnLogin').textContent = 'Login';
     $('btnLogin').disabled = false;
-    if (r.error) return toast(r.error.message, false);
-    enterScanner();
+    if (r.error) return showMsg('ERROR: ' + r.error.message, false);
+    showMsg('OK: Berhasil masuk!', true);
+    setTimeout(enterScanner, 300);
+  }).catch(function (err) {
+    $('btnLogin').textContent = 'Login';
+    $('btnLogin').disabled = false;
+    showMsg('Gagal connect: ' + err.message, false);
   });
 }
 
 function doLogout() {
+  if (!window.sb) return;
   if (html5QrCode) {
-    try { html5QrCode.stop().then(function () { sb.auth.signOut(); }); } catch (e) { sb.auth.signOut(); }
-  } else { sb.auth.signOut(); }
+    try { html5QrCode.stop().then(function () { window.sb.auth.signOut(); }); } catch (e) { window.sb.auth.signOut(); }
+  } else { window.sb.auth.signOut(); }
 }
 
-/* Scanner */
 function enterScanner() {
-  sb.from('stores').select('*').eq('user_id', (sb.auth.getUser ? undefined : null)).limit(1);
+  $('loginScreen').classList.add('hidden');
+  $('scanScreen').classList.remove('hidden');
+  $('scanScreen').classList.add('flex');
 
-  sb.auth.getUser().then(function (u) {
+  window.sb.auth.getUser().then(function (u) {
     if (!u.data.user) return;
-    sb.from('stores').select('*').eq('user_id', u.data.user.id).maybeSingle().then(function (r) {
+    window.sb.from('stores').select('*').eq('user_id', u.data.user.id).maybeSingle().then(function (r) {
       if (r.data) {
         $('storeName').textContent = r.data.nama || 'Toko';
         $('storeId').textContent = 'ID: ' + (r.data.id || '').slice(0, 8);
@@ -210,13 +230,15 @@ function enterScanner() {
     });
   });
 
-  $('loginScreen').classList.add('hidden');
-  $('scanScreen').classList.remove('hidden');
-  setTimeout(startCamera, 300);
+  setTimeout(startCamera, 400);
 }
 
 function startCamera() {
   if (html5QrCode) return;
+  if (typeof Html5Qrcode === 'undefined') {
+    toast('Library kamera gagal dimuat. Cek internet.', false);
+    return;
+  }
   html5QrCode = new Html5Qrcode('reader');
   var config = {
     fps: 15,
@@ -224,18 +246,7 @@ function startCamera() {
       var size = Math.min(vw, vh) * 0.7;
       return { width: size, height: size };
     },
-    aspectRatio: 1.0,
-    formatsToSupport: [
-      Html5QrcodeSupportedFormats.CODE_128,
-      Html5QrcodeSupportedFormats.CODE_39,
-      Html5QrcodeSupportedFormats.EAN_13,
-      Html5QrcodeSupportedFormats.EAN_8,
-      Html5QrcodeSupportedFormats.UPC_A,
-      Html5QrcodeSupportedFormats.UPC_E,
-      Html5QrcodeSupportedFormats.QR_CODE,
-      Html5QrcodeSupportedFormats.CODE_93,
-      Html5QrcodeSupportedFormats.ITF
-    ]
+    aspectRatio: 1.0
   };
 
   html5QrCode.start(
@@ -244,34 +255,30 @@ function startCamera() {
     onScanSuccess,
     function (err) { /* silent */ }
   ).catch(function (err) {
-    toast('Tidak bisa akses kamera: ' + err, false);
+    toast('Tidak bisa akses kamera: ' + err + '. Pastikan HTTPS & izinkan kamera.', false);
   });
 }
 
 function onScanSuccess(decodedText) {
   var now = Date.now();
-  /* Debounce: 2 detik untuk barcode yang sama */
   if (decodedText === lastCode && (now - lastTime) < 2000) return;
   lastCode = decodedText;
   lastTime = now;
-
   sendScan(decodedText);
 }
 
 function sendScan(code) {
-  /* Cari store_id */
-  sb.auth.getUser().then(function (u) {
+  window.sb.auth.getUser().then(function (u) {
     if (!u.data.user) return;
-    sb.from('stores').select('id').eq('user_id', u.data.user.id).maybeSingle().then(function (r) {
-      if (!r.data) return;
-      sb.from('scan_queue').insert({ store_id: r.data.id, barcode: code }).then(function (res) {
+    window.sb.from('stores').select('id').eq('user_id', u.data.user.id).maybeSingle().then(function (r) {
+      if (!r.data) return toast('Toko tidak ditemukan', false);
+      window.sb.from('scan_queue').insert({ store_id: r.data.id, barcode: code }).then(function (res) {
         if (res.error) {
           showError(code);
         } else {
-          /* Cek produk untuk feedback visual */
-          sb.from('products').select('nama,harga_jual,stok').eq('store_id', r.data.id).eq('barcode', code).maybeSingle().then(function (pr) {
+          window.sb.from('products').select('nama,harga_jual,stok').eq('store_id', r.data.id).eq('barcode', code).maybeSingle().then(function (pr) {
             if (pr.data) showSuccess(pr.data.nama, pr.data.harga_jual);
-            else showSuccess('Dikirim', 0);
+            else showSuccess('Dikirim ke desktop', 0);
           });
         }
       });
@@ -318,29 +325,35 @@ function addHistory(label, status) {
     var ok = h.status === 'ok';
     var time = h.time.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     return '<div class="px-4 py-2.5 border-b border-white/5 flex items-center gap-3">' +
-      '<div class="w-7 h-7 rounded-lg ' + (ok ? 'bg-emerald-500/20 text-emerald-300' : 'bg-red-500/20 text-red-300') + ' flex items-center justify-center text-xs font-bold">' + (ok ? '✓' : '!') + '</div>' +
+      '<div class="w-7 h-7 rounded-lg ' + (ok ? 'bg-emerald-500/20 text-emerald-300' : 'bg-red-500/20 text-red-300') + ' flex items-center justify-center text-xs font-bold flex-shrink-0">' + (ok ? '✓' : '!') + '</div>' +
       '<div class="flex-1 min-w-0"><div class="text-white text-xs font-semibold truncate">' + label + '</div>' +
       '<div class="text-slate-500 text-[10px]">' + time + '</div></div></div>';
   }).join('');
   $('history').innerHTML = html;
 }
 
-/* Init */
-sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: { persistSession: true, autoRefreshToken: true }
-});
+/* Event listeners */
+document.addEventListener('DOMContentLoaded', function() {
+  var bl = $('btnLogin');
+  if (bl) bl.onclick = doLogin;
+  var sp = $('sPass');
+  if (sp) sp.addEventListener('keypress', function (e) { if (e.key === 'Enter') doLogin(); });
 
-sb.auth.onAuthStateChange(function (ev, session) {
-  if (session && session.user) enterScanner();
-  else {
-    if (html5QrCode) { try { html5QrCode.stop(); html5QrCode = null; } catch (e) {} }
-    $('scanScreen').classList.add('hidden');
-    $('loginScreen').classList.remove('hidden');
+  if (window.sb) {
+    window.sb.auth.onAuthStateChange(function (ev, session) {
+      if (session && session.user) enterScanner();
+      else {
+        if (html5QrCode) { try { html5QrCode.stop(); html5QrCode = null; } catch (e) {} }
+        $('scanScreen').classList.add('hidden');
+        $('scanScreen').classList.remove('flex');
+        $('loginScreen').classList.remove('hidden');
+      }
+    });
+
+    window.sb.auth.getSession().then(function (r) {
+      if (r.data.session && r.data.session.user) enterScanner();
+    });
   }
-});
-
-sb.auth.getSession().then(function (r) {
-  if (r.data.session && r.data.session.user) enterScanner();
 });
 </script>
 </body>
