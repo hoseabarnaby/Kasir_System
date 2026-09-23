@@ -44,7 +44,7 @@ function showError(msg) {
     if (e.key === 'F4' && S.page === 'kasir') { e.preventDefault(); ms(); }
   });
 
-  /* Toggle sidebar mobile */
+  /* ===== Toggle sidebar mobile ===== */
   window.toggleSidebar = function() {
     var sb2 = $('sidebarMain');
     var ov = $('sidebarOverlay');
@@ -61,33 +61,87 @@ function showError(msg) {
     }
   };
 
-  /* Realtime listener untuk scan dari HP */
+  /* ===== Realtime listener untuk scan dari HP (FIXED) ===== */
   window.startScanListener = function() {
     if (!S.store) return;
-    if (window._scanChannel) sb.removeChannel(window._scanChannel);
-    window._scanChannel = sb.channel('scan-' + S.store.id)
+
+    /* Hapus channel lama kalau ada */
+    if (window._scanChannel) {
+      try { sb.removeChannel(window._scanChannel); } catch (e) {}
+      window._scanChannel = null;
+    }
+
+    /* Nama channel UNIK tiap kali (kunci utama fix) */
+    var chName = 'scan-' + S.store.id + '-' + Date.now();
+    console.log('[Scan] Subscribing to', chName);
+
+    window._scanChannel = sb.channel(chName)
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
         table: 'scan_queue',
         filter: 'store_id=eq.' + S.store.id
       }, function(payload) {
+        console.log('[Scan] Received:', payload.new);
+
         var code = payload.new.barcode;
+        var rowId = payload.new.id;
         var p = null;
+
+        /* Cari produk berdasarkan barcode atau kode */
         for (var i = 0; i < S.products.length; i++) {
-          if (S.products[i].barcode === code || (S.products[i].kode || '').toLowerCase() === code.toLowerCase()) { p = S.products[i]; break; }
+          if (S.products[i].barcode === code ||
+              (S.products[i].kode || '').toLowerCase() === code.toLowerCase()) {
+            p = S.products[i];
+            break;
+          }
         }
-        if (p && p.stok > 0) {
-          S.cart.push({ id: p.id, nama: p.nama, harga: Number(p.harga_jual), qty: 1 });
-          if (S.page === 'kasir') { rCart(); }
-          tt('📱 Scan HP: ' + p.nama, 'ok');
+
+        if (p && Number(p.stok) > 0) {
+          /* Cek stok cukup */
+          var currentQty = 0;
+          for (var j = 0; j < S.cart.length; j++) {
+            if (S.cart[j].id === p.id) { currentQty = S.cart[j].qty; break; }
+          }
+          if (currentQty >= Number(p.stok)) {
+            tt('📱 Stok tidak cukup: ' + p.nama, 'err');
+          } else {
+            /* Merge ke cart (tambah qty kalau sudah ada) */
+            var found = false;
+            for (var k = 0; k < S.cart.length; k++) {
+              if (S.cart[k].id === p.id) { S.cart[k].qty++; found = true; break; }
+            }
+            if (!found) {
+              S.cart.push({ id: p.id, nama: p.nama, harga: Number(p.harga_jual), qty: 1 });
+            }
+            if (S.page === 'kasir') rCart();
+            tt('📱 ' + p.nama, 'ok');
+          }
         } else if (!p) {
           tt('📱 Barcode tidak dikenal: ' + code, 'err');
         } else {
           tt('📱 Stok habis: ' + p.nama, 'err');
         }
-        sb.from('scan_queue').delete().eq('id', payload.new.id);
+
+        /* Hapus dari queue */
+        sb.from('scan_queue').delete().eq('id', rowId).then(function(res) {
+          if (res.error) console.error('[Scan] delete error:', res.error);
+        });
       })
-      .subscribe();
+      .subscribe(function(status) {
+        console.log('[Scan] Channel status:', status);
+        var el = $('scanStatus');
+        if (!el) return;
+        if (status === 'SUBSCRIBED') {
+          el.textContent = '📱 Live';
+          el.className = 'px-3 py-1 bg-emerald-100 text-emerald-700 text-[11px] font-bold rounded-full';
+        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          el.textContent = '📱 Offline';
+          el.className = 'px-3 py-1 bg-red-100 text-red-700 text-[11px] font-bold rounded-full';
+        } else if (status === 'CLOSED') {
+          el.textContent = '📱 Closed';
+          el.className = 'px-3 py-1 bg-slate-100 text-slate-600 text-[11px] font-bold rounded-full';
+        }
+      });
   };
 })();
