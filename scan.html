@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Scanner HP - Kasir Pro</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='24' fill='%234f46e5'/%3E%3Cpath d='M20 30h60v12H20z' fill='white'/%3E%3Cpath d='M25 46h50v34H25z' fill='white'/%3E%3C/svg%3E">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={theme:{extend:{colors:{brand:{500:'#6366f1',600:'#4f46e5',700:'#4338ca'}}}}}</script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<style>
+body { font-family: 'Inter', system-ui, sans-serif; background: #0f172a; margin: 0; overscroll-behavior: none; }
+#reader { width: 100%; height: 100%; }
+#reader video { border-radius: 0 !important; object-fit: cover !important; }
+#reader__scan_region { background: #000 !important; }
+#reader__dashboard { padding: 0 !important; }
+#reader__dashboard_section { padding: 8px !important; }
+#reader__dashboard_section_csr button { background: #4f46e5 !important; color: #fff !important; border: none !important; padding: 8px 16px !important; border-radius: 8px !important; font-weight: 700 !important; margin: 4px !important; }
+.flash-ok { animation: flashGreen 0.6s ease; }
+@keyframes flashGreen { 0% { background: rgba(16,185,129,0.8); } 100% { background: transparent; } }
+.flash-err { animation: flashRed 0.6s ease; }
+@keyframes flashRed { 0% { background: rgba(239,68,68,0.8); } 100% { background: transparent; } }
+.scanline { position: absolute; left: 10%; right: 10%; height: 2px; background: #ef4444; box-shadow: 0 0 8px #ef4444; animation: scan 2s ease-in-out infinite; }
+@keyframes scan { 0%,100% { top: 20%; } 50% { top: 80%; } }
+</style>
+</head>
+<body class="text-white overflow-hidden">
+
+<!-- LOGIN SCREEN -->
+<div id="loginScreen" class="fixed inset-0 bg-slate-900 flex items-center justify-center p-6 z-50">
+  <div class="bg-white rounded-2xl p-6 w-full max-w-sm text-slate-900">
+    <div class="text-center mb-6">
+      <div class="w-14 h-14 bg-gradient-to-br from-brand-500 to-purple-500 rounded-2xl mx-auto flex items-center justify-center text-white font-black text-xl mb-3">KP</div>
+      <h1 class="text-xl font-black">Scanner HP</h1>
+      <p class="text-xs text-slate-500 mt-1">Login dengan akun toko yang sama</p>
+    </div>
+    <div id="loginMsg" class="hidden mb-4 p-3 rounded-xl text-sm font-semibold"></div>
+    <div class="space-y-3">
+      <div>
+        <label class="block text-xs font-bold text-slate-600 uppercase mb-1.5">Email</label>
+        <input id="sEmail" type="email" placeholder="admin@toko.com" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm focus:border-brand-500 outline-none">
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-slate-600 uppercase mb-1.5">Password</label>
+        <input id="sPass" type="password" placeholder="Password" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm focus:border-brand-500 outline-none">
+      </div>
+      <button id="btnLogin" class="w-full py-3.5 bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm rounded-xl">Login</button>
+      <p class="text-center text-xs text-slate-500 mt-2">Belum punya akun? <a href="index.html" class="text-brand-600 font-bold">Daftar di sini</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- SCANNER SCREEN -->
+<div id="scanScreen" class="fixed inset-0 hidden flex flex-col">
+
+  <!-- Header -->
+  <div class="bg-slate-900/95 backdrop-blur border-b border-white/10 px-4 py-3 flex items-center gap-3 z-20">
+    <div class="w-9 h-9 bg-gradient-to-br from-brand-500 to-purple-500 rounded-xl flex items-center justify-center text-white font-black text-xs">KP</div>
+    <div class="flex-1 min-w-0">
+      <div id="storeName" class="text-white text-sm font-bold truncate">Toko</div>
+      <div id="storeId" class="text-slate-400 text-[10px] font-mono truncate">-</div>
+    </div>
+    <div id="connStatus" class="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 text-[10px] font-bold">● Terhubung</div>
+    <button onclick="doLogout()" class="px-3 py-1.5 rounded-lg bg-red-500/20 text-red-300 text-[11px] font-bold">Keluar</button>
+  </div>
+
+  <!-- Camera Area -->
+  <div id="cameraWrap" class="flex-1 relative bg-black overflow-hidden">
+    <div id="reader"></div>
+
+    <!-- Overlay Frame -->
+    <div class="absolute inset-0 pointer-events-none flex items-center justify-center" id="frameOverlay">
+      <div class="relative" style="width: 70%; max-width: 320px; aspect-ratio: 1;">
+        <div class="absolute inset-0 border-4 border-white/70 rounded-2xl"></div>
+        <div class="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-brand-400 rounded-tl-2xl"></div>
+        <div class="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-brand-400 rounded-tr-2xl"></div>
+        <div class="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-brand-400 rounded-bl-2xl"></div>
+        <div class="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-brand-400 rounded-br-2xl"></div>
+        <div class="scanline" id="scanline"></div>
+      </div>
+    </div>
+
+    <!-- Flash layer -->
+    <div id="flashLayer" class="absolute inset-0 pointer-events-none"></div>
+
+    <!-- Success Card -->
+    <div id="successCard" class="absolute top-4 left-4 right-4 bg-emerald-600 rounded-2xl p-4 shadow-2xl transform -translate-y-40 transition-all duration-300 z-30">
+      <div class="flex items-center gap-3">
+        <div class="text-3xl">✅</div>
+        <div class="flex-1 min-w-0">
+          <div class="text-white text-sm font-black" id="successName">Produk</div>
+          <div class="text-emerald-100 text-xs" id="successPrice">Rp 0</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Error Card -->
+    <div id="errorCard" class="absolute top-4 left-4 right-4 bg-red-600 rounded-2xl p-4 shadow-2xl transform -translate-y-40 transition-all duration-300 z-30">
+      <div class="flex items-center gap-3">
+        <div class="text-3xl">⚠️</div>
+        <div class="flex-1 min-w-0">
+          <div class="text-white text-sm font-black">Tidak ditemukan</div>
+          <div class="text-red-100 text-xs" id="errorCode">-</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Bar: Riwayat Scan -->
+  <div class="bg-slate-900/95 backdrop-blur border-t border-white/10 z-20" style="max-height: 30vh;">
+    <div class="px-4 py-2 flex items-center justify-between border-b border-white/5">
+      <div class="text-[11px] font-bold text-slate-400 uppercase">Scan Terakhir</div>
+      <div class="text-[11px] text-slate-500" id="scanCount">0 scan</div>
+    </div>
+    <div id="history" class="overflow-y-auto" style="max-height: 25vh;">
+      <div class="p-6 text-center text-slate-500 text-xs">Belum ada scan</div>
+    </div>
+  </div>
+</div>
+
+<script>
+var sb = null;
+var scanCount = 0;
+var history = [];
+var lastCode = '';
+var lastTime = 0;
+var html5QrCode = null;
+
+/* Ganti 2 baris ini dengan punyamu */
+var SUPABASE_URL = 'https://xxxxx.supabase.co';
+var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
+
+function $(id) { return document.getElementById(id); }
+
+function toast(m, ok) {
+  var c = ok ? 'bg-emerald-600' : 'bg-red-600';
+  var el = document.createElement('div');
+  el.className = 'fixed bottom-4 left-4 right-4 ' + c + ' text-white text-sm font-bold py-3 px-4 rounded-xl shadow-2xl z-50 text-center';
+  el.textContent = m;
+  document.body.appendChild(el);
+  setTimeout(function () { el.remove(); }, 2000);
+}
+
+/* Suara beep */
+function beep(ok) {
+  try {
+    var ctx = new (window.AudioContext || window.webkitAudioContext)();
+    var osc = ctx.createOscillator();
+    var gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    if (ok) {
+      osc.frequency.value = 1500;
+      gain.gain.value = 0.15;
+      osc.start();
+      setTimeout(function () { osc.frequency.value = 2000; }, 60);
+      setTimeout(function () { osc.stop(); ctx.close(); }, 120);
+    } else {
+      osc.frequency.value = 300;
+      gain.gain.value = 0.15;
+      osc.start();
+      setTimeout(function () { osc.frequency.value = 200; }, 100);
+      setTimeout(function () { osc.stop(); ctx.close(); }, 200);
+    }
+  } catch (e) {}
+}
+
+/* Getar HP */
+function vibrate(ok) {
+  if (!navigator.vibrate) return;
+  try { navigator.vibrate(ok ? [50, 30, 50] : [200]); } catch (e) {}
+}
+
+/* Login */
+$('btnLogin').onclick = doLogin;
+$('sPass').addEventListener('keypress', function (e) { if (e.key === 'Enter') doLogin(); });
+
+function doLogin() {
+  var email = $('sEmail').value.trim();
+  var pass = $('sPass').value;
+  if (!email || !pass) return toast('Isi email & password', false);
+  $('btnLogin').textContent = 'Memuat...';
+  $('btnLogin').disabled = true;
+  sb.auth.signInWithPassword({ email: email, password: pass }).then(function (r) {
+    $('btnLogin').textContent = 'Login';
+    $('btnLogin').disabled = false;
+    if (r.error) return toast(r.error.message, false);
+    enterScanner();
+  });
+}
+
+function doLogout() {
+  if (html5QrCode) {
+    try { html5QrCode.stop().then(function () { sb.auth.signOut(); }); } catch (e) { sb.auth.signOut(); }
+  } else { sb.auth.signOut(); }
+}
+
+/* Scanner */
+function enterScanner() {
+  sb.from('stores').select('*').eq('user_id', (sb.auth.getUser ? undefined : null)).limit(1);
+
+  sb.auth.getUser().then(function (u) {
+    if (!u.data.user) return;
+    sb.from('stores').select('*').eq('user_id', u.data.user.id).maybeSingle().then(function (r) {
+      if (r.data) {
+        $('storeName').textContent = r.data.nama || 'Toko';
+        $('storeId').textContent = 'ID: ' + (r.data.id || '').slice(0, 8);
+      }
+    });
+  });
+
+  $('loginScreen').classList.add('hidden');
+  $('scanScreen').classList.remove('hidden');
+  setTimeout(startCamera, 300);
+}
+
+function startCamera() {
+  if (html5QrCode) return;
+  html5QrCode = new Html5Qrcode('reader');
+  var config = {
+    fps: 15,
+    qrbox: function (vw, vh) {
+      var size = Math.min(vw, vh) * 0.7;
+      return { width: size, height: size };
+    },
+    aspectRatio: 1.0,
+    formatsToSupport: [
+      Html5QrcodeSupportedFormats.CODE_128,
+      Html5QrcodeSupportedFormats.CODE_39,
+      Html5QrcodeSupportedFormats.EAN_13,
+      Html5QrcodeSupportedFormats.EAN_8,
+      Html5QrcodeSupportedFormats.UPC_A,
+      Html5QrcodeSupportedFormats.UPC_E,
+      Html5QrcodeSupportedFormats.QR_CODE,
+      Html5QrcodeSupportedFormats.CODE_93,
+      Html5QrcodeSupportedFormats.ITF
+    ]
+  };
+
+  html5QrCode.start(
+    { facingMode: 'environment' },
+    config,
+    onScanSuccess,
+    function (err) { /* silent */ }
+  ).catch(function (err) {
+    toast('Tidak bisa akses kamera: ' + err, false);
+  });
+}
+
+function onScanSuccess(decodedText) {
+  var now = Date.now();
+  /* Debounce: 2 detik untuk barcode yang sama */
+  if (decodedText === lastCode && (now - lastTime) < 2000) return;
+  lastCode = decodedText;
+  lastTime = now;
+
+  sendScan(decodedText);
+}
+
+function sendScan(code) {
+  /* Cari store_id */
+  sb.auth.getUser().then(function (u) {
+    if (!u.data.user) return;
+    sb.from('stores').select('id').eq('user_id', u.data.user.id).maybeSingle().then(function (r) {
+      if (!r.data) return;
+      sb.from('scan_queue').insert({ store_id: r.data.id, barcode: code }).then(function (res) {
+        if (res.error) {
+          showError(code);
+        } else {
+          /* Cek produk untuk feedback visual */
+          sb.from('products').select('nama,harga_jual,stok').eq('store_id', r.data.id).eq('barcode', code).maybeSingle().then(function (pr) {
+            if (pr.data) showSuccess(pr.data.nama, pr.data.harga_jual);
+            else showSuccess('Dikirim', 0);
+          });
+        }
+      });
+    });
+  });
+}
+
+function showSuccess(name, price) {
+  beep(true);
+  vibrate(true);
+  $('successName').textContent = name;
+  $('successPrice').textContent = price > 0 ? 'Rp ' + Number(price).toLocaleString('id-ID') : 'Terkirim ke desktop';
+  var card = $('successCard');
+  card.style.transform = 'translateY(0)';
+  $('flashLayer').classList.add('flash-ok');
+  setTimeout(function () {
+    card.style.transform = 'translateY(-10rem)';
+    $('flashLayer').classList.remove('flash-ok');
+  }, 1500);
+  addHistory(name, 'ok');
+}
+
+function showError(code) {
+  beep(false);
+  vibrate(false);
+  $('errorCode').textContent = code;
+  var card = $('errorCard');
+  card.style.transform = 'translateY(0)';
+  $('flashLayer').classList.add('flash-err');
+  setTimeout(function () {
+    card.style.transform = 'translateY(-10rem)';
+    $('flashLayer').classList.remove('flash-err');
+  }, 1500);
+  addHistory(code, 'err');
+}
+
+function addHistory(label, status) {
+  scanCount++;
+  $('scanCount').textContent = scanCount + ' scan';
+  history.unshift({ label: label, status: status, time: new Date() });
+  if (history.length > 20) history.pop();
+
+  var html = history.map(function (h) {
+    var ok = h.status === 'ok';
+    var time = h.time.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    return '<div class="px-4 py-2.5 border-b border-white/5 flex items-center gap-3">' +
+      '<div class="w-7 h-7 rounded-lg ' + (ok ? 'bg-emerald-500/20 text-emerald-300' : 'bg-red-500/20 text-red-300') + ' flex items-center justify-center text-xs font-bold">' + (ok ? '✓' : '!') + '</div>' +
+      '<div class="flex-1 min-w-0"><div class="text-white text-xs font-semibold truncate">' + label + '</div>' +
+      '<div class="text-slate-500 text-[10px]">' + time + '</div></div></div>';
+  }).join('');
+  $('history').innerHTML = html;
+}
+
+/* Init */
+sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: { persistSession: true, autoRefreshToken: true }
+});
+
+sb.auth.onAuthStateChange(function (ev, session) {
+  if (session && session.user) enterScanner();
+  else {
+    if (html5QrCode) { try { html5QrCode.stop(); html5QrCode = null; } catch (e) {} }
+    $('scanScreen').classList.add('hidden');
+    $('loginScreen').classList.remove('hidden');
+  }
+});
+
+sb.auth.getSession().then(function (r) {
+  if (r.data.session && r.data.session.user) enterScanner();
+});
+</script>
+</body>
+</html>
